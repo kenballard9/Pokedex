@@ -73,6 +73,23 @@
                     </div>
                 </a>
             }
+
+            <div class="pokedex-paging">
+                @if (Model.HasPrev)
+                {
+                    <a class="nav-arrow left-arrow" asp-action="Index" asp-route-searchName="@Model.SearchName"
+                        asp-route-selectedType="@Model.SelectedType" asp-route-page="@(Model.ClampPage(Model.Page - 1))"
+                        asp-route-pageSize="@Model.PageSize">← Prev</a>
+                }
+                <span class="page-info">Page @Model.Page of @Model.TotalPages</span>
+                @if (Model.HasNext)
+                {
+                    <a class="nav-arrow right-arrow" asp-action="Index" asp-route-searchName="@Model.SearchName"
+                        asp-route-selectedType="@Model.SelectedType" asp-route-page="@(Model.ClampPage(Model.Page + 1))"
+                        asp-route-pageSize="@Model.PageSize">Next →</a>
+                }
+            </div>
+
         }
     </section>
 </div>
