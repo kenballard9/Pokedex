@@ -1,0 +1,145 @@
+﻿@model Pokedex.Models.PokedexIndexViewModel
+@{
+    ViewData["Title"] = "Pokédex";
+    Layout = "_Layout";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Montserrat:wght@400;700&display=swap"
+    rel="stylesheet" />
+<link rel="stylesheet" href="~/css/pokedex.css" />
+
+<div class="pokedex-container">
+    <header class="pokedex-header">
+        <h1>Pokédex</h1>
+
+        <!-- Search + filter form -->
+        <form method="get" asp-action="Index" class="pokedex-search" id="searchForm">
+            <input type="text" name="searchName" id="searchBox" value="@Model.SearchName"
+                placeholder="Search by name (e.g., pika)" autocomplete="off" />
+
+            <select name="selectedType">
+                <option value="">All Types</option>
+                @foreach (var t in Model.AllTypes)
+                {
+                    var isSelected = (Model.SelectedType ?? "")
+                    .Equals(t, System.StringComparison.OrdinalIgnoreCase);
+                    <option value="@t" selected="@(isSelected ? "selected" : null)">@t</option>
+                }
+            </select>
+
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- Autocomplete dropdown -->
+        <ul id="suggestions" class="suggestion-list" style="display:none;"></ul>
+    </header>
+
+    <!-- Results grid -->
+    <section class="pokedex-grid">
+        @if (Model.Results == null || Model.Results.Count == 0)
+        {
+            <div class="empty-state">No Pokémon found. Try another search.</div>
+        }
+        else
+        {
+            foreach (var p in Model.Results)
+            {
+                <div class="pokemon-card">
+                    <div class="pokemon-card-left">
+                        <img class="pokemon-image" src="@p.ImageUrl" alt="@p.Name" />
+                    </div>
+                    <div class="pokemon-card-right">
+                        <div class="pokemon-header">
+                            <span class="pokemon-id">#@p.Id</span>
+                            <h2 class="pokemon-name">@p.Name</h2>
+                        </div>
+
+                        <!-- Types -->
+                        <div class="pokemon-types">
+                            @foreach (var type in p.Types)
+                            {
+                                <span class="pokemon-type">@type</span>
+                            }
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="pokemon-stats">
+                            <span><strong>HP:</strong> @p.HP</span>
+                            <span><strong>Atk:</strong> @p.Attack</span>
+                            <span><strong>Def:</strong> @p.Defense</span>
+                            <span><strong>Sp.Atk:</strong> @p.SpecialAttack</span>
+                            <span><strong>Sp.Def:</strong> @p.SpecialDefense</span>
+                            <span><strong>Spd:</strong> @p.Speed</span>
+                        </div>
+
+                        <!-- Abilities -->
+                        <div class="pokemon-abilities">
+                            <strong>Abilities:</strong>
+                            @string.Join(", ", p.Abilities)
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </section>
+
+    <!-- Paging arrows -->
+    <div class="pokedex-paging">
+        @if (Model.HasPrev)
+        {
+            <a class="nav-arrow left-arrow" asp-action="Index" asp-route-searchName="@Model.SearchName"
+                asp-route-selectedType="@Model.SelectedType" asp-route-page="@(Model.ClampPage(Model.Page - 1))"
+                asp-route-pageSize="@Model.PageSize">← Prev</a>
+        }
+        <span class="page-info">Page @Model.Page of @Model.TotalPages</span>
+        @if (Model.HasNext)
+        {
+            <a class="nav-arrow right-arrow" asp-action="Index" asp-route-searchName="@Model.SearchName"
+                asp-route-selectedType="@Model.SelectedType" asp-route-page="@(Model.ClampPage(Model.Page + 1))"
+                asp-route-pageSize="@Model.PageSize">Next →</a>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const searchBox = document.getElementById('searchBox');
+        const suggestions = document.getElementById('suggestions');
+        let debounceTimer = null;
+
+        searchBox.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            const term = this.value.trim();
+            if (term.length === 0) {
+                suggestions.style.display = 'none';
+                suggestions.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`/Pokedex/Suggest?term=${encodeURIComponent(term)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        suggestions.innerHTML = '';
+                        if (data.length === 0) {
+                            suggestions.style.display = 'none';
+                            return;
+                        }
+                        data.forEach(name => {
+                            const li = document.createElement('li');
+                            li.textContent = name;
+                            li.addEventListener('click', () => {
+                                searchBox.value = name;
+                                document.getElementById('searchForm').submit();
+                            });
+                            suggestions.appendChild(li);
+                        });
+                        suggestions.style.display = 'block';
+                    })
+                    .catch(err => {
+                        console.error('Suggest error', err);
+                    });
+            }, 300); // debounce delay
+        });
+    </script>
+}

@@ -1,0 +1,78 @@
+@model Pokedex.Models.PokedexIndexViewModel
+@{
+    ViewData["Title"] = "Pokédex";
+    Layout = "_Layout";
+}
+
+<!-- Pokémon-ish fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Montserrat:wght@400;700&display=swap"
+    rel="stylesheet" />
+<!-- Our Pokédex styles (we'll add this file shortly) -->
+<link rel="stylesheet" href="~/css/pokedex.css" />
+
+<div class="pokedex-container">
+    <header class="pokedex-header">
+        <h1>Pokédex</h1>
+
+        <form method="get" asp-action="Index" class="pokedex-search">
+            <input type="text" name="searchName" value="@Model.SearchName"
+                placeholder="Search by name (e.g., pikachu)" />
+
+            <select name="selectedType">
+                <option value="">All Types</option>
+                @foreach (var t in Model.AllTypes)
+                {
+                    var isSelected = (Model.SelectedType ?? "")
+                    .Equals(t, System.StringComparison.OrdinalIgnoreCase);
+                    <option value="@t" selected="@(isSelected ? "selected" : null)">@t</option>
+                }
+            </select>
+
+            <button type="submit">Search</button>
+        </form>
+    </header>
+
+    <section class="pokedex-grid">
+        @if (Model.Results == null || Model.Results.Count == 0)
+        {
+            <div class="empty-state">No Pokémon found. Try another search.</div>
+        }
+        else
+        {
+            foreach (var p in Model.Results)
+            {
+                <!-- Flexbox card; image is intentionally in the top-left area -->
+                <a class="pokemon-card" asp-controller="Pokedex" asp-action="Index" asp-route-searchName="@p.Name.ToLower()">
+                    <div class="pokemon-card-left">
+                        <img class="pokemon-image" src="@p.ImageUrl" alt="@p.Name" />
+                    </div>
+                    <div class="pokemon-card-right">
+                        <div class="pokemon-header">
+                            <span class="pokemon-id">#@p.Id</span>
+                            <h2 class="pokemon-name">@p.Name</h2>
+                        </div>
+                        <div class="pokemon-types">
+                            @foreach (var type in p.Types)
+                            {
+                                <span class="pokemon-type">@type</span>
+                            }
+                        </div>
+                        <div class="pokemon-stats">
+                            <span><strong>HP:</strong> @p.HP</span>
+                            <span><strong>Atk:</strong> @p.Attack</span>
+                            <span><strong>Def:</strong> @p.Defense</span>
+                            <span><strong>Sp.Atk:</strong> @p.SpecialAttack</span>
+                            <span><strong>Sp.Def:</strong> @p.SpecialDefense</span>
+                            <span><strong>Spd:</strong> @p.Speed</span>
+                        </div>
+
+                        <div class="pokemon-abilities">
+                            <strong>Abilities:</strong> @string.Join(", ", p.Abilities)
+                        </div>
+
+                    </div>
+                </a>
+            }
+        }
+    </section>
+</div>
