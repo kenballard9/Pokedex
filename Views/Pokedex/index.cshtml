@@ -54,17 +54,36 @@
                         <div class="pokemon-types">
                             @foreach (var type in p.Types)
                             {
-                                <span class="pokemon-type">@type</span>
+                                var t = (type ?? "").ToLowerInvariant();
+                                var style = t switch
+                                {
+                                    "fairy" => "background:#EE99AC;color:#000;",
+                                    "fire" => "background:#E74C3C;color:#fff;",
+                                    "water" => "background:#3498DB;color:#fff;",
+                                    "dark" => "background:#000000;color:#fff;",
+                                    "steel" => "background:#C0C0C0;color:#000;",
+                                    "grass" => "background:#2ECC71;color:#000;",
+                                    "bug" => "background:#A3D977;color:#000;",
+                                    "dragon" => "background:#D4AF37;color:#000;", // gold
+                                    "fighting" => "background:#C49A6C;color:#000;", // light brown
+                                    "ground" => "background:#8B5E3C;color:#fff;", // brown
+                                    "flying" => "background:#D3D3D3;color:#000;", // light grey
+                                    "electric" => "background:#F1C40F;color:#000;", // yellow
+                                    "ghost" => "background:#000000;color:#fff;", // black
+                                    "ice" => "background:#A2DFF7;color:#000;", // light blue
+                                    "normal" => "background:#FFFFFF;color:#000;border:1px solid #ddd;",
+                                    "psychic" => "background:#C2185B;color:#fff;", // dark pink
+                                    "rock" => "background:#C5C5C5;color:#000;", // light grey
+                                    "poison" => "background:#4B0082;color:#fff;", // dark purple
+                                    _ => "background:#e0e0e0;color:#000;"
+                                };
+
+                                <span style="@style padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; text-transform:capitalize; margin:2px; display:inline-block;">
+                                    @type
+                                </span>
                             }
                         </div>
-                        <div class="pokemon-stats">
-                            <span><strong>HP:</strong> @p.HP</span>
-                            <span><strong>Atk:</strong> @p.Attack</span>
-                            <span><strong>Def:</strong> @p.Defense</span>
-                            <span><strong>Sp.Atk:</strong> @p.SpecialAttack</span>
-                            <span><strong>Sp.Def:</strong> @p.SpecialDefense</span>
-                            <span><strong>Spd:</strong> @p.Speed</span>
-                        </div>
+
 
                         <div class="pokemon-abilities">
                             <strong>Abilities:</strong> @string.Join(", ", p.Abilities)

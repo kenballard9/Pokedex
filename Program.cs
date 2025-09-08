@@ -33,3 +33,7 @@ app.MapControllerRoute(
     pattern: "{controller=Pokedex}/{action=Index}/{id?}");
 
 app.Run();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Pokedex}/{action=Index}/{id?}");

@@ -232,3 +232,126 @@ h1, h2 {
 .suggestion-list li:hover {
   background: #f0f0f0;
 }
+
+/* --- Type color palette (clean replacement) --- */
+:root {
+    --type-normal: #A8A77A;
+    --type-fire: #EE8130;
+    --type-water: #6390F0;
+    --type-electric: #F7D02C;
+    --type-grass: #7AC74C;
+    --type-ice: #96D9D6;
+    --type-fighting: #C22E28;
+    --type-poison: #4B0082; /* dark purple */
+    --type-ground: #E2BF65;
+    --type-flying: #A98FF3;
+    --type-psychic: #F95587;
+    --type-bug: #A6B91A;
+    --type-rock: #B6A136;
+    --type-ghost: #735797;
+    --type-dragon: #6F35FC;
+    --type-dark: #705746;
+    --type-steel: #B7B7CE;
+    --type-fairy: #D685AD;
+}
+
+/* Base chip */
+.pokemon-type {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: capitalize;
+    border: 1px solid rgba(0,0,0,.08);
+}
+
+/* Map each type to its color + readable text */
+.type-normal {
+    background: var(--type-normal);
+    color: #000;
+}
+
+.type-fire {
+    background: var(--type-fire);
+    color: #fff;
+}
+
+.type-water {
+    background: var(--type-water);
+    color: #fff;
+}
+
+.type-electric {
+    background: var(--type-electric);
+    color: #000;
+}
+
+.type-grass {
+    background: var(--type-grass);
+    color: #000;
+}
+
+.type-ice {
+    background: var(--type-ice);
+    color: #000;
+}
+
+.type-fighting {
+    background: var(--type-fighting);
+    color: #fff;
+}
+
+.type-poison {
+    background: var(--type-poison);
+    color: #fff;
+}
+/* dark purple */
+.type-ground {
+    background: var(--type-ground);
+    color: #000;
+}
+
+.type-flying {
+    background: var(--type-flying);
+    color: #000;
+}
+
+.type-psychic {
+    background: var(--type-psychic);
+    color: #fff;
+}
+
+.type-bug {
+    background: var(--type-bug);
+    color: #000;
+}
+
+.type-rock {
+    background: var(--type-rock);
+    color: #000;
+}
+
+.type-ghost {
+    background: var(--type-ghost);
+    color: #fff;
+}
+
+.type-dragon {
+    background: var(--type-dragon);
+    color: #fff;
+}
+
+.type-dark {
+    background: var(--type-dark);
+    color: #fff;
+}
+
+.type-steel {
+    background: var(--type-steel);
+    color: #000;
+}
+
+.type-fairy {
+    background: var(--type-fairy);
+    color: #000;
+}

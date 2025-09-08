@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex.csproj": {}
+    "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex\\Pokedex.csproj": {}
   },
   "projects": {
-    "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex.csproj": {
+    "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex\\Pokedex.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex.csproj",
+        "projectUniqueName": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex\\Pokedex.csproj",
         "projectName": "Pokedex",
-        "projectPath": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex.csproj",
+        "projectPath": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex\\Pokedex.csproj",
         "packagesPath": "C:\\Users\\kenba\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\obj\\",
+        "outputPath": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Pokedex\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
