@@ -95,3 +95,4 @@ C:\Users\kenba\Documents\Projects\Pokedex\obj\Debug\net9.0\Pokedex.genruntimecon
 C:\Users\kenba\Documents\Projects\Pokedex\obj\Debug\net9.0\ref\Pokedex.dll
 C:\Users\kenba\Documents\Projects\Pokedex\obj\Debug\net9.0\compressed\oyp31p0z0c-dxxck27rn0.gz
 C:\Users\kenba\Documents\Projects\Pokedex\obj\Debug\net9.0\Pokedex.sourcelink.json
+C:\Users\kenba\Documents\Projects\Pokedex\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
