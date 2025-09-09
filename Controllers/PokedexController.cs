@@ -42,7 +42,7 @@ namespace Pokedex.Controllers
                 vm.Results = await _client.GetByTypePageAsync(selectedType, vm.Page, vm.PageSize);
                 return View(vm);
             }
-
+v
             // If a search term is present, try exact first, then prefix matches
             if (!string.IsNullOrWhiteSpace(searchName))
             {
