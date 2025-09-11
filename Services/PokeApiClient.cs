@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;                    // <-- added (for IOException in retry helper)
 using Microsoft.Extensions.Caching.Memory;
 using Pokedex.Models;
 
@@ -149,7 +150,7 @@ namespace Pokedex.Services
             return await GetCachedAsync<PokemonDetails?>($"pdet:{slug}", TTL_Detail, async () =>
             {
                 // ---- /pokemon/{nameOrId} ----
-                using var res = await _http.GetAsync($"pokemon/{slug}", ct);
+                using var res = await GetWithRetriesAsync($"pokemon/{slug}", ct);   // <-- switched to retry helper
                 if (!res.IsSuccessStatusCode) return null;
 
                 await using var stream = await res.Content.ReadAsStreamAsync(ct);
@@ -225,7 +226,7 @@ namespace Pokedex.Services
                 var slug = displayName.ToLowerInvariant().Replace(' ', '-');
                 return await GetCachedAsync<AbilityDefinition?>($"ability:{slug}", TTL_Lookup, async () =>
                 {
-                    using var res = await _http.GetAsync($"ability/{slug}", ct);
+                    using var res = await GetWithRetriesAsync($"ability/{slug}", ct);   // <-- switched to retry helper
                     if (!res.IsSuccessStatusCode) return null;
 
                     await using var stream = await res.Content.ReadAsStreamAsync(ct);
@@ -266,7 +267,7 @@ namespace Pokedex.Services
             {
                 var entries = new List<PokedexEntry>();
 
-                using var res = await _http.GetAsync($"pokemon-species/{id}", ct);
+                using var res = await GetWithRetriesAsync($"pokemon-species/{id}", ct);  // <-- switched to retry helper
                 if (!res.IsSuccessStatusCode) return entries;
 
                 await using var stream = await res.Content.ReadAsStreamAsync(ct);
@@ -530,7 +531,7 @@ namespace Pokedex.Services
             return GetCachedAsync<List<PokemonListItem>>($"evo:{speciesOrPokemonId}", TTL_Lookup, async () =>
             {
                 // 1) species -> evolution_chain URL
-                using var res1 = await _http.GetAsync($"pokemon-species/{speciesOrPokemonId}", ct);
+                using var res1 = await GetWithRetriesAsync($"pokemon-species/{speciesOrPokemonId}", ct); // <-- switched
                 if (!res1.IsSuccessStatusCode) return new List<PokemonListItem>();
                 await using var s1 = await res1.Content.ReadAsStreamAsync(ct);
                 using var d1 = await JsonDocument.ParseAsync(s1, cancellationToken: ct);
@@ -540,7 +541,7 @@ namespace Pokedex.Services
                 if (chainId <= 0) return new List<PokemonListItem>();
 
                 // 2) evolution-chain/{id}
-                using var res2 = await _http.GetAsync($"evolution-chain/{chainId}", ct);
+                using var res2 = await GetWithRetriesAsync($"evolution-chain/{chainId}", ct);          // <-- switched
                 if (!res2.IsSuccessStatusCode) return new List<PokemonListItem>();
                 await using var s2 = await res2.Content.ReadAsStreamAsync(ct);
                 using var d2 = await JsonDocument.ParseAsync(s2, cancellationToken: ct);
@@ -636,5 +637,70 @@ namespace Pokedex.Services
         public Task<int> GetTypeCountAsync(string typeName)
             => GetTypeCountAsync(typeName, default);
         // ============================================================================
+
+        // =================== RETRY HELPER (added) ===================================
+        // Retries GETs on transient failures (429/5xx, connection resets, timeouts) with backoff + jitter.
+        private async Task<HttpResponseMessage> GetWithRetriesAsync(string relativeUrl, CancellationToken ct)
+        {
+            const int maxAttempts = 4;
+
+            TimeSpan ComputeDelay(int attempt, HttpResponseMessage? res = null)
+            {
+                // Honor Retry-After if present
+                if (res?.Headers?.RetryAfter != null)
+                {
+                    var ra = res.Headers.RetryAfter;
+                    if (ra.Delta.HasValue) return ra.Delta.Value;
+                    if (ra.Date.HasValue)
+                    {
+                        var delta = ra.Date.Value - DateTimeOffset.UtcNow;
+                        if (delta > TimeSpan.Zero) return delta;
+                    }
+                }
+
+                // Exponential backoff with jitter
+                var baseMs = 250 * Math.Pow(2, attempt - 1); // 250ms, 500ms, 1000ms, 2000ms
+                var jitterMs = Random.Shared.Next(50, 200);
+                return TimeSpan.FromMilliseconds(baseMs + jitterMs);
+            }
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    var res = await _http.GetAsync(relativeUrl, ct);
+
+                    // Retry on 429 or 5xx. On last attempt, return whatever we got.
+                    if ((int)res.StatusCode == 429 || (int)res.StatusCode >= 500)
+                    {
+                        if (attempt == maxAttempts) return res;
+                        var delay = ComputeDelay(attempt, res);
+                        res.Dispose();
+                        await Task.Delay(delay, ct);
+                        continue;
+                    }
+
+                    return res; // success or non-retriable status (e.g., 404)
+                }
+                catch (HttpRequestException) when (attempt < maxAttempts)
+                {
+                    await Task.Delay(ComputeDelay(attempt), ct);
+                }
+                catch (IOException) when (attempt < maxAttempts)
+                {
+                    await Task.Delay(ComputeDelay(attempt), ct);
+                }
+                catch (TaskCanceledException) when (!ct.IsCancellationRequested && attempt < maxAttempts)
+                {
+                    // timeout (not user-canceled)
+                    await Task.Delay(ComputeDelay(attempt), ct);
+                }
+            }
+
+            // If we ever get here (we shouldn’t), do a final try without swallowing exceptions
+            return await _http.GetAsync(relativeUrl, ct);
+        }
+        // ============================================================================
+
     }
 }
