@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\services\\pokeapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:services\\pokeapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\views\\pokedex\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:views\\pokedex\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -13,10 +17,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
       "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\services\\pokeapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:services\\pokeapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\models\\pokemondetails.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -58,11 +58,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "site.css",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\wwwroot\\css\\site.css",
               "RelativeDocumentMoniker": "wwwroot\\css\\site.css",
@@ -70,38 +70,37 @@
               "RelativeToolTip": "wwwroot\\css\\site.css",
               "ViewState": "AgIAABICAAAAAAAAAAASwC0CAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-09-10T21:28:06.37Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-10T21:28:06.37Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
               "Title": "PokeApiClient.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Services\\PokeApiClient.cs",
               "RelativeDocumentMoniker": "Services\\PokeApiClient.cs",
               "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Services\\PokeApiClient.cs",
               "RelativeToolTip": "Services\\PokeApiClient.cs",
-              "ViewState": "AgIAAGECAAAAAAAAAAAYwHoCAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAM4AAAAAAAAAAAAwwN0AAAAUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-09T21:16:37.838Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Details.cshtml",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml",
               "RelativeDocumentMoniker": "Views\\Pokedex\\Details.cshtml",
               "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml",
               "RelativeToolTip": "Views\\Pokedex\\Details.cshtml",
-              "ViewState": "AgIAAP0AAAAAAAAAAAAgwBcBAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAIBAAAAAAAAAAAiwBwBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-10T20:18:01.303Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Browse.cshtml",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Browse.cshtml",
               "RelativeDocumentMoniker": "Views\\Pokedex\\Browse.cshtml",
@@ -109,8 +108,7 @@
               "RelativeToolTip": "Views\\Pokedex\\Browse.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-10T21:07:09.385Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-10T21:07:09.385Z"
             },
             {
               "$type": "Document",
@@ -122,8 +120,7 @@
               "RelativeToolTip": "Models\\PokemonDetails.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAA1wDcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-10T16:18:26.925Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-10T16:18:26.925Z"
             },
             {
               "$type": "Document",
@@ -159,8 +156,7 @@
               "RelativeToolTip": "Controllers\\PokedexController.cs",
               "ViewState": "AgIAAGMAAAAAAAAAAAAAAHcAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-09T18:49:22.49Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-09T18:49:22.49Z"
             },
             {
               "$type": "Document",

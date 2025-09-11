@@ -70,8 +70,7 @@
               "RelativeToolTip": "wwwroot\\css\\site.css",
               "ViewState": "AgIAABICAAAAAAAAAAASwC0CAAACAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-09-10T21:28:06.37Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-10T21:28:06.37Z"
             },
             {
               "$type": "Document",
@@ -83,8 +82,7 @@
               "RelativeToolTip": "Services\\PokeApiClient.cs",
               "ViewState": "AgIAAGECAAAAAAAAAAAYwHoCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-09T21:16:37.838Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-09T21:16:37.838Z"
             },
             {
               "$type": "Document",
@@ -92,9 +90,9 @@
               "Title": "Details.cshtml",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml",
               "RelativeDocumentMoniker": "Views\\Pokedex\\Details.cshtml",
-              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml",
-              "RelativeToolTip": "Views\\Pokedex\\Details.cshtml",
-              "ViewState": "AgIAAP0AAAAAAAAAAAAgwBcBAAAAAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml*",
+              "RelativeToolTip": "Views\\Pokedex\\Details.cshtml*",
+              "ViewState": "AgIAAAIBAAAAAAAAAAAiwBwBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-10T20:18:01.303Z",
               "EditorCaption": ""
@@ -109,8 +107,7 @@
               "RelativeToolTip": "Views\\Pokedex\\Browse.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-10T21:07:09.385Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-10T21:07:09.385Z"
             },
             {
               "$type": "Document",
@@ -122,8 +119,7 @@
               "RelativeToolTip": "Models\\PokemonDetails.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAA1wDcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-10T16:18:26.925Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-10T16:18:26.925Z"
             },
             {
               "$type": "Document",
@@ -159,8 +155,7 @@
               "RelativeToolTip": "Controllers\\PokedexController.cs",
               "ViewState": "AgIAAGMAAAAAAAAAAAAAAHcAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-09T18:49:22.49Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-09T18:49:22.49Z"
             },
             {
               "$type": "Document",

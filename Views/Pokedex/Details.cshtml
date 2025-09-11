@@ -28,7 +28,12 @@
     <section style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
         <div>
             <h2 style="margin-top:0;">Base Stats</h2>
-            <div style="display:grid;grid-template-columns:1fr auto;row-gap:6px;">
+            <div style="
+                    display:grid;
+                    grid-template-columns:max-content max-content;
+                    column-gap:50px;   /* ← updated spacing */
+                    row-gap:6px;
+                    align-items:baseline;">
                 <div>HP</div><div><strong>@Model.HP</strong></div>
                 <div>Attack</div><div><strong>@Model.Attack</strong></div>
                 <div>Defense</div><div><strong>@Model.Defense</strong></div>
