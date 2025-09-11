@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Pokedex.Models;
 using Pokedex.Services;
 using System;
@@ -8,19 +8,21 @@ using System.Collections.Generic;
 
 namespace Pokedex.Controllers
 {
-    public class PokedexController : Controller
+    public class HomeController : Controller
     {
         private readonly IPokeApiClient _client;
 
-        public PokedexController(IPokeApiClient client)
+        public HomeController(IPokeApiClient client)
         {
             _client = client;
         }
 
-        /// <summary>
-        /// Main Pokédex screen with search (prefix ok), filter by type, and paging.
-        /// /Pokedex/Index?searchName=&selectedType=&page=1&pageSize=20
-        /// </summary>
+        // Optional: root -> Home/Index
+        [HttpGet("/")]
+        public IActionResult Root() => RedirectToAction(nameof(Index));
+
+        // Home/Index with search + type filter + paging
+        [HttpGet("/Home/Index")]
         public async Task<IActionResult> Index(string? searchName, string? selectedType, int page = 1, int pageSize = 20)
         {
             var vm = new PokedexIndexViewModel
@@ -32,7 +34,7 @@ namespace Pokedex.Controllers
                 PageSize = pageSize < 1 ? 20 : pageSize
             };
 
-            // If type filter is present, page across that type
+            // TYPE FILTER
             if (!string.IsNullOrWhiteSpace(selectedType))
             {
                 vm.TotalCount = await _client.GetTypeCountAsync(selectedType);
@@ -40,30 +42,30 @@ namespace Pokedex.Controllers
                 vm.Page = Math.Min(Math.Max(1, vm.Page), Math.Max(1, (int)Math.Ceiling(vm.TotalCount / (double)vm.PageSize)));
 
                 vm.Results = await _client.GetByTypePageAsync(selectedType, vm.Page, vm.PageSize);
-                return View(vm);
+                return View("~/Views/Home/Index.cshtml", vm);
             }
 
-            // If a search term is present, try exact first, then prefix matches
+            // NAME SEARCH
             if (!string.IsNullOrWhiteSpace(searchName))
             {
-                // 1) exact (or ID) lookup
+                // exact (or ID)
                 var exact = await _client.GetDetailsAsync(searchName);
                 if (exact != null)
                 {
                     vm.TotalCount = 1;
                     vm.Page = 1; vm.PageSize = 1;
                     vm.Results = new List<PokemonDetails> { exact };
-                    return View(vm);
+                    return View("~/Views/Home/Index.cshtml", vm);
                 }
 
-                // 2) prefix suggestions (search-as-you-type fallback when user presses Enter)
-                var suggestions = await _client.SuggestAsync(searchName, max: 200); // large cap; we'll page it next
+                // prefix suggestions (paged)
+                var suggestions = await _client.SuggestAsync(searchName, max: 200);
                 vm.TotalCount = suggestions.Count;
 
                 if (vm.TotalCount == 0)
                 {
                     vm.Results = new();
-                    return View(vm);
+                    return View("~/Views/Home/Index.cshtml", vm);
                 }
 
                 var totalPages = Math.Max(1, (int)Math.Ceiling(vm.TotalCount / (double)vm.PageSize));
@@ -82,43 +84,20 @@ namespace Pokedex.Controllers
                 }
                 vm.Results = details.OrderBy(d => d.Id).ToList();
 
-                return View(vm);
+                return View("~/Views/Home/Index.cshtml", vm);
             }
 
-            // Default: page across all Pokémon
+            // DEFAULT: page across all Pokémon
             vm.TotalCount = await _client.GetTotalPokemonCountAsync();
             var total = Math.Max(0, vm.TotalCount);
             var totalPagesAll = Math.Max(1, (int)Math.Ceiling(total / (double)vm.PageSize));
             vm.Page = Math.Min(Math.Max(1, vm.Page), totalPagesAll);
 
             vm.Results = await _client.GetPageAsync(vm.Page, vm.PageSize);
-            return View(vm);
+            return View("~/Views/Home/Index.cshtml", vm);
+
+
+
         }
-
-        /// <summary>
-        /// JSON endpoint for search-as-you-type (autocomplete).
-        /// /Pokedex/Suggest?term=pi
-        /// </summary>
-        [HttpGet]
-        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-        public async Task<IActionResult> Suggest(string term, int max = 10)
-        {
-            var items = await _client.SuggestAsync(term, max);
-            return Json(items);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Details(string id, CancellationToken ct) // ct is fine to keep
-        {
-            if (string.IsNullOrWhiteSpace(id)) return NotFound();
-
-            // 🔧 call the 1-arg overload that the interface guarantees
-            var details = await _client.GetDetailsAsync(id);
-
-            if (details == null) return NotFound();
-            return View(details);
-        }
-
-
     }
 }

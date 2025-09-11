@@ -1,14 +1,14 @@
-using Pokedex.Services;            // ✅ add this
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Pokedex.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC
 builder.Services.AddControllersWithViews();
 
-// ✅ Register an HttpClient-backed PokéAPI service
+// DI for the API client
 builder.Services.AddHttpClient<IPokeApiClient, PokeApiClient>(client =>
 {
     client.BaseAddress = new Uri("https://pokeapi.co/api/v2/");
@@ -27,13 +27,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// ✅ Make Pokédex the default route
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Pokedex}/{action=Index}/{id?}");
+    pattern: "{controller=Pokedex}/{action=Index}/{id?}"); // <-- Pokedex is default
 
 app.Run();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Pokedex}/{action=Index}/{id?}");
