@@ -2,7 +2,21 @@
 
 <div style="max-width:1100px;margin:24px auto;padding:16px;background:#fff;border-radius:12px;">
     <div style="margin-bottom:12px;">
-        <a asp-action="Index" class="nav-arrow">&larr; Back to Pokédex</a>
+        @{
+            var returnUrl = ViewBag.ReturnUrl as string;
+            var safeReturnUrl = !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? returnUrl
+            : Url.Action("Index", "Home"); // fallback to your grid page
+        }
+
+        <div style="margin-bottom:12px;">
+            <a class="nav-arrow"
+               href="@(ViewBag.ReturnUrl as string ?? Url.Action("Index", "Home"))">
+                &larr; Back to Pokédex
+            </a>
+
+        </div>
+
     </div>
 
     <header style="display:flex;align-items:center;gap:16px;border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:16px;">
@@ -71,24 +85,26 @@
         </div>
     </section>
 
-    @* ===== EVOLUTION LINE (CENTERED) ===== *@
+    @* ===== EVOLUTION LINE (CENTERED + FIXED ANCHOR) ===== *@
     @if ((Model.EvolutionLine?.Count ?? 0) > 0)
     {
         <section style="margin:18px 0 8px;">
             <h2 style="margin:0 0 .75rem; text-align:center;">Evolution</h2>
 
-            <!-- full-width wrapper ensures the row can center across the page -->
-            <div style="width:100%; max-width:100%; margin-inline:auto; display:flex; justify-content:center;">
+            @{
+                var backUrl = (ViewBag.ReturnUrl as string) ?? Url.Action("Index", "Home");
+            }
+
+            <div style="width:100%; display:flex; justify-content:center;">
                 <div class="evo-row"
                      style="display:flex; align-items:center; justify-content:center; gap:.5rem; flex-wrap:wrap; max-width:100%;">
                     @{
                         for (int i = 0; i < Model.EvolutionLine!.Count; i++)
                         {
                             var e = Model.EvolutionLine[i];
+
                             <a class="evo-card"
-                               asp-controller="Pokedex"
-                               asp-action="Details"
-                               asp-route-id="@e.Id"
+                               href="@Url.Action("Details", "Pokedex", new { id = e.Id, returnUrl = backUrl })"
                                title="@e.Name"
                                style="display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:.5rem .6rem;box-shadow:0 1px 0 rgba(0,0,0,.05);min-width:110px;">
                                 <img src="@e.ImageUrl" alt="@e.Name" loading="lazy" decoding="async"
@@ -111,6 +127,7 @@
         </section>
     }
     @* ===== END EVOLUTION LINE ===== *@
+
 
     @* ===== TYPE MATCHUPS (existing) ===== *@
     @{

@@ -1,4 +1,12 @@
 ﻿@model Pokedex.Models.PokedexIndexViewModel
+@{
+    // Builds a URL that remembers the current search + type + paging
+    var returnUrl = Url.Action(
+        "Index", "Home",
+        new { searchName = Model.SearchName, selectedType = Model.SelectedType, page = Model.Page, pageSize = Model.PageSize }
+    );
+}
+
 
 <!-- Title -->
 <h1 class="pokemon-title">Pokédex</h1>
@@ -33,13 +41,26 @@
     <button type="submit">Search</button>
 </form>
 
+@{
+    // Build the current Index URL from the model (no direct Request access needed)
+    var currentUrl = Url.Action("Index", "Home", new {
+        page        = Model?.Page ?? 1,
+        pageSize    = Model?.PageSize ?? 20,
+        searchName  = Model?.SearchName,
+        selectedType= Model?.SelectedType
+    });
+}
+
+
+
 <section class="pokedex-grid">
 @if (Model?.Results != null && Model.Results.Count > 0)
 {
     foreach (var p in Model.Results)
     {
         <a class="pokemon-card"
-           href='@Url.Action("Details","Pokedex", new { id = p.Id })'
+           href='@Url.Action("Details","Pokedex", new { id = p.Id, returnUrl = currentUrl })'
+
            aria-label="View details for @p.Name">
 
             <div class="pokemon-card-left">

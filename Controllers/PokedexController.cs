@@ -33,14 +33,19 @@ namespace Pokedex.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(string id, CancellationToken ct)
+        [HttpGet]
+        public async Task<IActionResult> Details(string id, string? returnUrl, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(id)) return NotFound();
+
+            // Stash the return URL so the view can render a "Back to Pokédex" link
+            ViewBag.ReturnUrl = returnUrl;
 
             var details = await _client.GetDetailsAsync(id);
             if (details == null) return NotFound();
 
             return View(details);
         }
+
     }
 }
