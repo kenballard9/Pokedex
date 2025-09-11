@@ -1,4 +1,7 @@
-﻿@model Pokedex.Models.PokedexIndexViewModel
+﻿@using System.Linq﻿
+@model Pokedex.Models.PokedexIndexViewModel
+
+
 @{
     // Builds a URL that remembers the current search + type + paging
     var returnUrl = Url.Action(

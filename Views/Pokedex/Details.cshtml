@@ -1,4 +1,5 @@
-﻿@model Pokedex.Models.PokemonDetails
+﻿@using System.Linq
+@model Pokedex.Models.PokemonDetails
 
 <div style="max-width:1100px;margin:24px auto;padding:16px;background:#fff;border-radius:12px;">
     <div style="margin-bottom:12px;">
@@ -14,9 +15,7 @@
                href="@(ViewBag.ReturnUrl as string ?? Url.Action("Index", "Home"))">
                 &larr; Back to Pokédex
             </a>
-
         </div>
-
     </div>
 
     <header style="display:flex;align-items:center;gap:16px;border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:16px;">
@@ -45,7 +44,7 @@
             <div style="
                     display:grid;
                     grid-template-columns:max-content max-content;
-                    column-gap:50px;   /* ← updated spacing */
+                    column-gap:50px;   /* spacing between label and number */
                     row-gap:6px;
                     align-items:baseline;">
                 <div>HP</div><div><strong>@Model.HP</strong></div>
@@ -128,8 +127,7 @@
     }
     @* ===== END EVOLUTION LINE ===== *@
 
-
-    @* ===== TYPE MATCHUPS (existing) ===== *@
+    @* ===== TYPE MATCHUPS ===== *@
     @{
         Func<string, string> Cap = s => string.IsNullOrEmpty(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
         Func<double, string> MultLabel = m =>
@@ -211,7 +209,6 @@
                 @if (strongAgainst.Count == 0)
                 {
                     <span class="none" style="color:#64748b;">—</span>
-                    ;
                 }
                 else
                 {
@@ -229,7 +226,6 @@
                 @if (weaknesses.Count == 0)
                 {
                     <span class="none" style="color:#64748b;">—</span>
-                    ;
                 }
                 else
                 {
@@ -248,7 +244,6 @@
                 @if (resistances.Count == 0)
                 {
                     <span class="none" style="color:#64748b;">—</span>
-                    ;
                 }
                 else
                 {
@@ -267,7 +262,6 @@
                 @if (immunities.Count == 0)
                 {
                     <span class="none" style="color:#64748b;">—</span>
-                    ;
                 }
                 else
                 {
