@@ -59,7 +59,7 @@
 <section class="pokedex-grid">
 @if (Model?.Results != null && Model.Results.Count > 0)
 {
-    foreach (var p in Model.Results)
+    foreach (var p in Model.Results.OrderBy(p => p.Id))
     {
         <a class="pokemon-card"
            href='@Url.Action("Details","Pokedex", new { id = p.Id, returnUrl = currentUrl })'

@@ -7,6 +7,14 @@
       "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\controllers\\pokedexcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:controllers\\pokedexcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\views\\pokedex\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:views\\pokedex\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
@@ -18,8 +26,34 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PokedexController.cs",
+              "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Controllers\\PokedexController.cs",
+              "RelativeDocumentMoniker": "Controllers\\PokedexController.cs",
+              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Controllers\\PokedexController.cs",
+              "RelativeToolTip": "Controllers\\PokedexController.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAkwDIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T22:18:26.806Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HomeController.cs",
+              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "Controllers\\HomeController.cs",
+              "ViewState": "AgIAAFwAAAAAAAAAAAAswHgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-11T22:17:51.308Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -28,23 +62,22 @@
               "RelativeDocumentMoniker": "Views\\Home\\Index.cshtml",
               "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Home\\Index.cshtml*",
               "RelativeToolTip": "Views\\Home\\Index.cshtml*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAAAAA==",
+              "ViewState": "AgIAADAAAAAAAAAAAAAQwEEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-11T22:06:37.148Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "Details.cshtml",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml",
               "RelativeDocumentMoniker": "Views\\Pokedex\\Details.cshtml",
-              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml*",
-              "RelativeToolTip": "Views\\Pokedex\\Details.cshtml*",
+              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml",
+              "RelativeToolTip": "Views\\Pokedex\\Details.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-11T22:02:42.018Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-11T22:02:42.018Z"
             }
           ]
         }

@@ -29,7 +29,7 @@ namespace Pokedex.Controllers
             {
                 SearchName = searchName,
                 SelectedType = selectedType,
-                AllTypes = await _client.GetTypesAsync(), // make sure your GetTypesAsync excludes "stellar"
+                AllTypes = await _client.GetTypesAsync(), // your client already excludes non-standard types
                 Page = page < 1 ? 1 : page,
                 PageSize = pageSize < 1 ? 20 : pageSize
             };
@@ -40,31 +40,33 @@ namespace Pokedex.Controllers
 
             // ------------------------------
             // A) TYPE SELECTED (and maybe name)
-            // -> pull that type's pool, then apply name filter (Contains, case-insensitive), then page
+            // -> Filter inside the type pool, then ORDER BY ID, then page
             // ------------------------------
             if (hasType)
             {
-                // large cap; this call is cached in your client
+                // Pull the full pool for the selected type (cached in client)
                 var allInType = await _client.GetPokemonByTypeAsync(vm.SelectedType!, max: 20000);
 
-                var filtered = allInType
+                // Filter by name text (if any), then sort by Id ASC
+                var filteredById = allInType
                     .Where(p => !hasTerm || p.Name.Contains(term, StringComparison.OrdinalIgnoreCase))
-                    .Select(p => p.Name)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(n => n)
+                    .OrderBy(p => p.Id)
                     .ToList();
 
-                vm.TotalCount = filtered.Count;
+                vm.TotalCount = filteredById.Count;
 
                 var totalPages = Math.Max(1, (int)Math.Ceiling(vm.TotalCount / (double)vm.PageSize));
                 vm.Page = Math.Min(Math.Max(1, vm.Page), totalPages);
 
-                var pageNames = filtered
+                // Page by ID order
+                var pageItems = filteredById
                     .Skip((vm.Page - 1) * vm.PageSize)
                     .Take(vm.PageSize)
                     .ToList();
 
-                var details = await Task.WhenAll(pageNames.Select(n => _client.GetDetailsAsync(n)));
+                // Hydrate to details for the page subset, and ensure final stable order by Id
+                var detailsTasks = pageItems.Select(i => _client.GetDetailsAsync(i.Id.ToString()));
+                var details = await Task.WhenAll(detailsTasks);
                 vm.Results = details.Where(d => d != null)!.OrderBy(d => d!.Id).ToList()!;
 
                 return View("~/Views/Home/Index.cshtml", vm);
@@ -72,10 +74,11 @@ namespace Pokedex.Controllers
 
             // ------------------------------
             // B) NAME ONLY (no type)
-            // -> try exact/id first; else contains across all names
+            // -> find candidates by contains, resolve their Ids, ORDER BY ID, then page
             // ------------------------------
             if (hasTerm)
             {
+                // Try exact (or ID) first — quick path
                 var exact = await _client.GetDetailsAsync(term);
                 if (exact != null)
                 {
@@ -85,30 +88,42 @@ namespace Pokedex.Controllers
                     return View("~/Views/Home/Index.cshtml", vm);
                 }
 
+                // Get all names and filter by contains
                 var allNames = await _client.GetAllNamesAsync();
-                var filtered = allNames
+                var nameMatches = allNames
                     .Where(n => n.Contains(term, StringComparison.OrdinalIgnoreCase))
-                    .OrderBy(n => n)
                     .ToList();
 
-                vm.TotalCount = filtered.Count;
+                // Resolve each candidate's Id via lightweight lookup (cached),
+                // then sort by Id ASC BEFORE paging
+                var liteTasks = nameMatches.Select(n => _client.GetPokemonByNameAsync(n));
+                var liteResults = await Task.WhenAll(liteTasks);
+                var orderedById = liteResults
+                    .Where(x => x != null)
+                    .OrderBy(x => x!.Id)
+                    .ToList()!;
+
+                vm.TotalCount = orderedById.Count;
 
                 var totalPages = Math.Max(1, (int)Math.Ceiling(vm.TotalCount / (double)vm.PageSize));
                 vm.Page = Math.Min(Math.Max(1, vm.Page), totalPages);
 
-                var pageNames = filtered
+                // Page by Id order
+                var pageItems = orderedById
                     .Skip((vm.Page - 1) * vm.PageSize)
                     .Take(vm.PageSize)
                     .ToList();
 
-                var details = await Task.WhenAll(pageNames.Select(n => _client.GetDetailsAsync(n)));
+                // Hydrate details for the page subset; keep Id order
+                var detailsTasks = pageItems.Select(i => _client.GetDetailsAsync(i!.Id.ToString()));
+                var details = await Task.WhenAll(detailsTasks);
                 vm.Results = details.Where(d => d != null)!.OrderBy(d => d!.Id).ToList()!;
 
                 return View("~/Views/Home/Index.cshtml", vm);
             }
 
             // ------------------------------
-            // C) NO FILTERS -> default paging
+            // C) NO FILTERS -> default paging (already by Id)
             // ------------------------------
             vm.TotalCount = await _client.GetTotalPokemonCountAsync();
             var totalPagesAll = Math.Max(1, (int)Math.Ceiling(vm.TotalCount / (double)vm.PageSize));
