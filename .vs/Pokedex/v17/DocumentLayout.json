@@ -7,16 +7,20 @@
       "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:services\\pokeapiclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\views\\pokedex\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:views\\pokedex\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\views\\pokedex\\browse.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:views\\pokedex\\browse.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4C5465EE-87F3-0393-CCA8-ADC7154948E8}|Pokedex.csproj|c:\\users\\kenba\\documents\\projects\\pokedex\\models\\pokemondetails.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -58,19 +62,33 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Home\\Index.cshtml",
+              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Home\\Index.cshtml*",
+              "RelativeToolTip": "Views\\Home\\Index.cshtml*",
+              "ViewState": "AgIAAIQAAAAAAAAAAAAAABMAAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-11T18:33:43.536Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "site.css",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\wwwroot\\css\\site.css",
               "RelativeDocumentMoniker": "wwwroot\\css\\site.css",
               "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\wwwroot\\css\\site.css",
               "RelativeToolTip": "wwwroot\\css\\site.css",
-              "ViewState": "AgIAABICAAAAAAAAAAASwC0CAAACAAAAAAAAAA==",
+              "ViewState": "AgIAANMAAAAAAAAAAAAAANMAAAAUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2025-09-10T21:28:06.37Z"
+              "WhenOpened": "2025-09-10T21:28:06.37Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -78,16 +96,16 @@
               "Title": "PokeApiClient.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Services\\PokeApiClient.cs",
               "RelativeDocumentMoniker": "Services\\PokeApiClient.cs",
-              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Services\\PokeApiClient.cs",
-              "RelativeToolTip": "Services\\PokeApiClient.cs",
-              "ViewState": "AgIAAM4AAAAAAAAAAAAwwN0AAAAUAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Services\\PokeApiClient.cs*",
+              "RelativeToolTip": "Services\\PokeApiClient.cs*",
+              "ViewState": "AgIAAGQCAAAAAAAAAAAuwIACAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-09T21:16:37.838Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "Details.cshtml",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Details.cshtml",
               "RelativeDocumentMoniker": "Views\\Pokedex\\Details.cshtml",
@@ -100,7 +118,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "Browse.cshtml",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Pokedex\\Browse.cshtml",
               "RelativeDocumentMoniker": "Views\\Pokedex\\Browse.cshtml",
@@ -112,7 +130,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "PokemonDetails.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Models\\PokemonDetails.cs",
               "RelativeDocumentMoniker": "Models\\PokemonDetails.cs",
@@ -124,7 +142,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "HomeController.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Controllers\\HomeController.cs",
               "RelativeDocumentMoniker": "Controllers\\HomeController.cs",
@@ -136,7 +154,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
@@ -148,7 +166,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "PokedexController.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Controllers\\PokedexController.cs",
               "RelativeDocumentMoniker": "Controllers\\PokedexController.cs",
@@ -160,7 +178,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "IPokeApiClient.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Services\\IPokeApiClient.cs",
               "RelativeDocumentMoniker": "Services\\IPokeApiClient.cs",
@@ -172,7 +190,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "PokedexIndexViewModel.cs",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Models\\PokedexIndexViewModel.cs",
               "RelativeDocumentMoniker": "Models\\PokedexIndexViewModel.cs",
@@ -184,7 +202,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
@@ -196,7 +214,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "site.js",
               "DocumentMoniker": "C:\\Users\\kenba\\Documents\\Projects\\Pokedex\\wwwroot\\js\\site.js",
               "RelativeDocumentMoniker": "wwwroot\\js\\site.js",

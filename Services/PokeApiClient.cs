@@ -44,7 +44,8 @@ namespace Pokedex.Services
 
         public async Task<List<string>> GetTypesAsync(CancellationToken ct = default)
         {
-            return await GetCachedAsync("types:all", TTL_Lookup, async () =>
+            // NOTE: cache key bumped to v2 to invalidate previous cached list that might include "Stellar"
+            return await GetCachedAsync("types:all:v2", TTL_Lookup, async () =>
             {
                 var list = new List<string>();
                 using var res = await _http.GetAsync("type", ct);
@@ -58,8 +59,13 @@ namespace Pokedex.Services
                     foreach (var t in results.EnumerateArray())
                     {
                         var name = t.GetProperty("name").GetString();
-                        if (!string.IsNullOrWhiteSpace(name) && name != "unknown" && name != "shadow")
-                            list.Add(Capitalize(name));
+                        if (string.IsNullOrWhiteSpace(name)) continue;
+
+                        var lower = name.Trim().ToLowerInvariant();
+                        // Exclude non-standard types: unknown, shadow, stellar
+                        if (lower == "unknown" || lower == "shadow" || lower == "stellar") continue;
+
+                        list.Add(Capitalize(name));
                     }
                 }
 
