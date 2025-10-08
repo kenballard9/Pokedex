@@ -22,7 +22,7 @@
     </div>
 
     <header class="type-header">
-        <h1 class="type-title">
+        <h1 class="pokemon-title type-title">
             @Cap(Model.TypeName) <span class="type-subtitle">Type</span>
         </h1>
 
@@ -147,153 +147,277 @@
 </div>
 
 <style>
-    /* ====== Layout & Card ====== */
+    /* ===== Shared Pokédex Theme ===== */
     :root {
-        --page-bg: #f6f8fb;
-        --card-bg: #ffffff;
-        --border: #e5e7eb;
-        --shadow: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
-        --text: #0f172a; /* slate-900 */
-        --text-muted: #64748b; /* slate-500 */
-        --accent: #334155; /* slate-700 */
-        --radius: 14px;
-        --gap-lg: 24px;
-        --gap-md: 16px;
-        --gap-sm: 10px;
+        --dex-red: #D32F2F;
+        --dex-dark: #8B0000;
+        --dex-yellow: #FFCB05;
+        --dex-blue: #3D7DCA;
+        --dex-light: #F5F7FB;
+        --chip: #efefef;
+        /* Pokémon type palette */
+        --type-normal: #D3D3D3;
+        --type-fire: #EE8130;
+        --type-water: #6390F0;
+        --type-electric: #F7D02C;
+        --type-grass: #7AC74C;
+        --type-ice: #96D9D6;
+        --type-fighting: #C22E28;
+        --type-poison: #4B0082;
+        --type-ground: #E2BF65;
+        --type-flying: #ADD8E6;
+        --type-psychic: #F95587;
+        --type-bug: #A6B91A;
+        --type-rock: #B6A136;
+        --type-ghost: #735797;
+        --type-dragon: #6F35FC;
+        --type-dark: #705746;
+        --type-steel: #B7B7CE;
+        --type-fairy: #D685AD;
     }
 
+    /* Background & global fonts */
     body {
-        background: var(--page-bg);
+        margin: 0;
+        background: linear-gradient(180deg, var(--dex-red) 0%, var(--dex-dark) 100%);
+        font-family: 'Montserrat', system-ui, sans-serif;
+        color: #111;
     }
 
+    h1, h2 {
+        font-family: 'Press Start 2P', cursive;
+        letter-spacing: 1px;
+    }
+
+    /* ===== Type Details Container ===== */
     .type-detail-page {
-        max-width: 1100px;
-        margin: 24px auto;
-        padding: 20px;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        color: var(--text);
+        max-width: 1200px;
+        margin: 40px auto;
+        background: var(--dex-light);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        border: 4px solid var(--dex-yellow);
     }
 
-    /* Top bar */
+    /* Back link */
     .top-bar {
         display: flex;
-        align-items: center;
         justify-content: flex-start;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
     .back-link {
         text-decoration: none;
-        font-weight: 600;
+        background: var(--dex-blue);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        transition: transform .1s ease, filter .1s ease;
     }
+
+        .back-link:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
 
     /* Header */
     .type-header {
-        display: grid;
-        grid-template-columns: 1fr max-content;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: var(--gap-md);
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 12px;
-        margin-bottom: var(--gap-lg);
+        border-bottom: 3px solid var(--dex-blue);
+        padding-bottom: 16px;
+        margin-bottom: 20px;
     }
 
     .type-title {
+        color: var(--dex-blue);
+        text-shadow: 0 2px 0 rgba(0,0,0,.1);
         margin: 0;
-        font-size: clamp(1.4rem, 2vw, 1.8rem);
-        line-height: 1.2;
+        font-size: 24px;
     }
 
     .type-subtitle {
-        opacity: .6;
-        font-weight: 400;
+        color: var(--dex-dark);
+        font-size: 16px;
     }
 
     /* Sections grid */
     .type-sections {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: var(--gap-lg);
+        gap: 20px;
     }
 
+    @@media (max-width: 900px) {
+        .type-sections {
+            grid-template-columns: 1fr;
+        }
+    }
 
     /* Cards */
     .type-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
+        background: white;
+        border: 2px solid var(--dex-blue);
+        border-radius: 16px;
         padding: 16px;
-        box-shadow: var(--shadow);
-        display: flex;
-        flex-direction: column;
-        gap: var(--gap-sm);
+        box-shadow: 0 8px 16px rgba(0,0,0,.1);
     }
 
     .type-card-title {
-        margin: 0 0 4px 0;
-        font-size: 1.05rem;
-        color: var(--accent);
+        color: var(--dex-blue);
+        font-size: 14px;
+        margin: 0 0 10px 0;
     }
 
     .muted {
-        color: var(--text-muted);
-        font-weight: 500;
+        color: #555;
     }
 
-    /* Badge rows */
+    /* Badge group */
     .type-badges {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
     }
 
-    /* Chips (rely on your existing .pokemon-type .type-<name> color classes) */
-    .type-chip {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 92px;
-        padding: 8px 12px;
-        border-radius: 9999px;
+    /* Base chip */
+    .pokemon-type {
+        background: var(--dex-blue);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 999px;
         font-weight: 700;
-        text-decoration: none;
-        cursor: pointer;
-        box-shadow: 0 1px 0 rgba(0,0,0,.04);
-        border: 1px solid rgba(0,0,0,.06);
-        transition: transform .06s ease, box-shadow .12s ease, opacity .12s ease;
-        user-select: none;
+        font-size: 12px;
+        text-transform: capitalize;
+        border: 1px solid rgba(0,0,0,.08);
+        transition: transform .1s ease, box-shadow .1s ease;
     }
 
+        .pokemon-type:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,.15);
+        }
+
+    /* Large self chip */
     .type-chip-lg {
-        padding: 10px 14px;
-        min-width: 110px;
+        font-size: 14px;
+        padding: 8px 14px;
     }
 
-    .type-chip:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 6px rgba(0,0,0,.08);
-    }
-
-    .type-chip:active {
-        transform: translateY(0);
-    }
-
-    .type-chip:focus-visible {
-        outline: 2px solid currentColor;
-        outline-offset: 2px;
-    }
-
-    /* All Types section */
+    /* All types list */
     .all-types {
         margin-top: 24px;
     }
 
     .all-types-title {
-        margin: 0 0 8px 0;
-        font-size: 1rem;
-        color: var(--accent);
+        font-size: 14px;
+        color: var(--dex-dark);
+        margin-bottom: 10px;
+        border-bottom: 2px solid var(--dex-blue);
+        display: inline-block;
+    }
+
+    /* ===== Type color mapping ===== */
+    .type-normal {
+        background: var(--type-normal);
+        color: #000;
+    }
+
+    .type-fire {
+        background: var(--type-fire);
+        color: #fff;
+    }
+
+    .type-water {
+        background: var(--type-water);
+        color: #fff;
+    }
+
+    .type-electric {
+        background: var(--type-electric);
+        color: #000;
+    }
+
+    .type-grass {
+        background: var(--type-grass);
+        color: #000;
+    }
+
+    .type-ice {
+        background: var(--type-ice);
+        color: #000;
+    }
+
+    .type-fighting {
+        background: var(--type-fighting);
+        color: #fff;
+    }
+
+    .type-poison {
+        background: var(--type-poison);
+        color: #fff;
+    }
+
+    .type-ground {
+        background: var(--type-ground);
+        color: #000;
+    }
+
+    .type-flying {
+        background: var(--type-flying);
+        color: #000;
+    }
+
+    .type-psychic {
+        background: var(--type-psychic);
+        color: #fff;
+    }
+
+    .type-bug {
+        background: var(--type-bug);
+        color: #000;
+    }
+
+    .type-rock {
+        background: var(--type-rock);
+        color: #000;
+    }
+
+    .type-ghost {
+        background: var(--type-ghost);
+        color: #fff;
+    }
+
+    .type-dragon {
+        background: var(--type-dragon);
+        color: #fff;
+    }
+
+    .type-dark {
+        background: var(--type-dark);
+        color: #fff;
+    }
+
+    .type-steel {
+        background: var(--type-steel);
+        color: #000;
+    }
+
+    .type-fairy {
+        background: var(--type-fairy);
+        color: #000;
+    }
+
+    /* Page title */
+    .pokemon-title {
+        font-family: 'Press Start 2P', cursive;
+        font-size: 32px;
+        text-align: center;
+        color: var(--dex-yellow);
+        text-shadow: -3px 3px 0 var(--dex-blue), 3px 3px 0 var(--dex-blue), 3px -3px 0 var(--dex-blue), -3px -3px 0 var(--dex-blue);
+        margin: 0 0 24px 0;
     }
 </style>
