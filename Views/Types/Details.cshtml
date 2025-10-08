@@ -1,0 +1,167 @@
+﻿@model Pokedex.ViewModels.TypeDetailsViewModel
+@using System.Linq
+
+@{
+    ViewData["Title"] = $"{Model.TypeName} Type Details";
+
+    // Prefer VM.ReturnUrl, then ?returnUrl, then Home/Index
+    var routeReturnUrl = (ViewBag.ReturnUrl as string);
+    var fromVmReturn = Model.ReturnUrl;
+    var back = !string.IsNullOrWhiteSpace(fromVmReturn) ? fromVmReturn
+             : !string.IsNullOrWhiteSpace(routeReturnUrl) ? routeReturnUrl
+             : Url.Action("Index", "Home");
+
+    string Cap(string s) => string.IsNullOrWhiteSpace(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
+    string Lower(string s) => (s ?? "").ToLowerInvariant();
+}
+
+<div class="type-detail-page" style="max-width:1100px;margin:24px auto;padding:16px;background:#fff;border-radius:12px;">
+    <div style="margin-bottom:12px;">
+        <a class="nav-arrow" href="@back">&larr; Back</a>
+    </div>
+
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #e5e7eb;padding-bottom:12px;margin-bottom:16px;">
+        <h1 class="pokemon-title" style="margin:0;">
+            @Cap(Model.TypeName) <span style="opacity:.6;font-weight:400;">Type</span>
+        </h1>
+
+        <!-- Self chip -->
+        @{
+            var selfLower = Lower(Model.TypeName);
+        }
+        <span class="pokemon-type type-@selfLower" style="padding:6px 10px;border-radius:999px;font-weight:700;">
+            @Cap(Model.TypeName)
+        </span>
+    </header>
+
+    <section class="type-sections" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <!-- Strengths -->
+        <div>
+            <h2 style="margin:0 0 .5rem;">Strengths (Deals 2× To)</h2>
+            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (Model.Strengths?.Any() == true)
+                {
+                    foreach (var s in Model.Strengths)
+                    {
+                        var lower = Lower(s);
+                        <a class="pokemon-type type-@lower type-chip"
+                           href="@Url.Action("Details", "Types", new { name = s, returnUrl = back })"
+                           role="button"
+                           title="Go to @Cap(s) type">
+                            @Cap(s)
+                        </a>
+                    }
+                }
+                else
+                {
+                    <span class="muted" style="color:#64748b;">None</span>
+                }
+            </div>
+        </div>
+
+        <!-- Weak to -->
+        <div>
+            <h2 style="margin:0 0 .5rem;">Weak to (Takes 2× From)</h2>
+            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (Model.Weaknesses?.Any() == true)
+                {
+                    foreach (var w in Model.Weaknesses)
+                    {
+                        var lower = Lower(w);
+                        <a class="pokemon-type type-@lower type-chip"
+                           href="@Url.Action("Details", "Types", new { name = w, returnUrl = back })"
+                           role="button"
+                           title="Go to @Cap(w) type">
+                            @Cap(w)
+                        </a>
+                    }
+                }
+                else
+                {
+                    <span class="muted" style="color:#64748b;">None</span>
+                }
+            </div>
+        </div>
+
+        <!-- Resistant to -->
+        <div>
+            <h2 style="margin:0 0 .5rem;">Resistant to (Takes ½× From)</h2>
+            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (Model.Resistances?.Any() == true)
+                {
+                    foreach (var r in Model.Resistances)
+                    {
+                        var lower = Lower(r);
+                        <a class="pokemon-type type-@lower type-chip"
+                           href="@Url.Action("Details", "Types", new { name = r, returnUrl = back })"
+                           role="button"
+                           title="Go to @Cap(r) type">
+                            @Cap(r)
+                        </a>
+                    }
+                }
+                else
+                {
+                    <span class="muted" style="color:#64748b;">None</span>
+                }
+            </div>
+        </div>
+
+        <!-- Immune to -->
+        <div>
+            <h2 style="margin:0 0 .5rem;">Immune to (Takes 0× From)</h2>
+            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (Model.Immunities?.Any() == true)
+                {
+                    foreach (var i in Model.Immunities)
+                    {
+                        var lower = Lower(i);
+                        <a class="pokemon-type type-@lower type-chip"
+                           href="@Url.Action("Details", "Types", new { name = i, returnUrl = back })"
+                           role="button"
+                           title="Go to @Cap(i) type">
+                            @Cap(i)
+                        </a>
+                    }
+                }
+                else
+                {
+                    <span class="muted" style="color:#64748b;">None</span>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Optional: show “related” quick nav (all types) -->
+    @if (Model.AllTypes?.Any() == true)
+    {
+        <section style="margin-top:20px;">
+            <h3 style="margin:0 0 .5rem;">Jump to Type</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @foreach (var t in Model.AllTypes)
+                {
+                    var lower = Lower(t);
+                    <a class="pokemon-type type-@lower type-chip"
+                       href="@Url.Action("Details", "Types", new { name = t, returnUrl = back })"
+                       role="button">@Cap(t)</a>
+                }
+            </div>
+        </section>
+    }
+</div>
+
+<style>
+    /* Make anchor chips feel like buttons; uses your existing .pokemon-type palette */
+    .type-chip {
+        text-decoration: none;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 9999px;
+        font-weight: 700;
+    }
+
+        .type-chip:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+        }
+</style>

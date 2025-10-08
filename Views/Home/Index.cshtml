@@ -1,0 +1,203 @@
+﻿@using System.Linq﻿
+@model Pokedex.Models.PokedexIndexViewModel
+
+
+@{
+    // Builds a URL that remembers the current search + type + paging
+    var returnUrl = Url.Action(
+        "Index", "Home",
+        new { searchName = Model.SearchName, selectedType = Model.SelectedType, page = Model.Page, pageSize = Model.PageSize }
+    );
+}
+
+
+<!-- Title -->
+<h1 class="pokemon-title">Pokédex</h1>
+
+<!-- Search + Type filter -->
+<form class="pokedex-search" method="get" asp-controller="Home" asp-action="Index">
+    <input type="text"
+           name="searchName"
+           value="@(Model?.SearchName ?? "")"
+           placeholder="Search by name (e.g., pikachu)"
+           aria-label="Search by name" />
+
+    <select name="selectedType" aria-label="Filter by type">
+        <option value="">All Types</option>
+        @if (Model?.AllTypes != null)
+        {
+            foreach (var t in Model.AllTypes)
+            {
+                var isSelected = string.Equals(Model?.SelectedType, t, System.StringComparison.OrdinalIgnoreCase);
+                if (isSelected)
+                {
+                    <option value="@t" selected="selected">@t</option>
+                }
+                else
+                {
+                    <option value="@t">@t</option>
+                }
+            }
+        }
+    </select>
+
+    <button type="submit">Search</button>
+</form>
+
+@{
+    // Build the current Index URL from the model (no direct Request access needed)
+    var currentUrl = Url.Action("Index", "Home", new {
+        page        = Model?.Page ?? 1,
+        pageSize    = Model?.PageSize ?? 20,
+        searchName  = Model?.SearchName,
+        selectedType= Model?.SelectedType
+    });
+}
+
+
+
+<section class="pokedex-grid">
+@if (Model?.Results != null && Model.Results.Count > 0)
+{
+    foreach (var p in Model.Results.OrderBy(p => p.Id))
+    {
+        <a class="pokemon-card"
+           href='@Url.Action("Details","Pokedex", new { id = p.Id, returnUrl = currentUrl })'
+
+           aria-label="View details for @p.Name">
+
+            <div class="pokemon-card-left">
+                <img class="pokemon-image" src="@p.ImageUrl" alt="@p.Name" />
+            </div>
+
+            <div class="pokemon-card-right">
+                <div class="pokemon-header">
+                    <span class="pokemon-id">#@p.Id</span>
+                    <h2 class="pokemon-name">@p.Name</h2>
+                </div>
+
+                <!-- Types directly under the name -->
+                <div class="pokemon-types">
+                    @if (p.Types != null)
+                    {
+                        foreach (var type in p.Types)
+                        {
+                            var lower = (type ?? "").ToLowerInvariant();
+                            <span class="pokemon-type type-@lower">@type</span>
+                        }
+                    }
+                </div>
+
+                <!-- Abilities as plain comma-separated text -->
+                <div class="pokemon-abilities-text">
+                    <strong>Ability:</strong>
+                    @if (p.Abilities != null && p.Abilities.Count > 0)
+                    {
+                        @string.Join(", ", p.Abilities)
+                    }
+                    else
+                    {
+                        @:None
+                    }
+                </div>
+            </div>
+        </a>
+    }
+}
+else
+{
+    <div class="empty-state">No results.</div>
+}
+</section>
+
+@{
+    // Pager (preserves searchName, selectedType, pageSize)
+    var hasModel   = Model != null && Model.PageSize > 0;
+    var showPager  = hasModel && Model.TotalCount > Model.PageSize;
+    var totalPages = showPager ? (int)Math.Ceiling(Model.TotalCount / (double)Model.PageSize) : 1;
+    if (totalPages < 1) totalPages = 1;
+
+    var current    = Model?.Page ?? 1;
+    var prevPage   = current > 1 ? current - 1 : 1;
+    var nextPage   = current < totalPages ? current + 1 : totalPages;
+}
+
+@if (showPager)
+{
+    <div class="pokedex-paging">
+
+        @* ← Prev *@
+        @if (current > 1)
+        {
+            <a class="nav-arrow"
+               href='@Url.Action("Index","Home", new {
+                    page = prevPage,
+                    pageSize = Model!.PageSize,
+                    searchName = Model?.SearchName ?? "",
+                    selectedType = Model?.SelectedType ?? ""
+               })'>← Prev</a>
+        }
+        else
+        {
+            <span class="nav-arrow disabled" aria-disabled="true">← Prev</span>
+        }
+
+        <span class="page-info">Page @current of @totalPages</span>
+
+        @* Page jump (Enter key or Go button submits) *@
+        <form id="pageJumpForm" class="page-jump" method="get" asp-controller="Home" asp-action="Index" aria-label="Jump to page">
+            <input type="hidden" name="searchName"   value="@(Model?.SearchName ?? "")" />
+            <input type="hidden" name="selectedType" value="@(Model?.SelectedType ?? "")" />
+            <input type="hidden" name="pageSize"     value="@Model!.PageSize" />
+
+            <label for="pageJump" class="visually-hidden">Go to page</label>
+            <input id="pageJump"
+                   name="page"
+                   type="number"
+                   min="1"
+                   max="@totalPages"
+                   value="@current"
+                   inputmode="numeric"
+                   pattern="[0-9]*"
+                   aria-describedby="pageJumpHelp" />
+
+            <button type="submit" class="go-btn" aria-label="Go to entered page">Go</button>
+            <span id="pageJumpHelp" class="visually-hidden">Enter a page number between 1 and @totalPages and press Enter.</span>
+        </form>
+
+        @* Next → *@
+        @if (current < totalPages)
+        {
+            <a class="nav-arrow"
+               href='@Url.Action("Index","Home", new {
+                    page = nextPage,
+                    pageSize = Model!.PageSize,
+                    searchName = Model?.SearchName ?? "",
+                    selectedType = Model?.SelectedType ?? ""
+               })'>Next →</a>
+        }
+        else
+        {
+            <span class="nav-arrow disabled" aria-disabled="true">Next →</span>
+        }
+    </div>
+
+    <script>
+        (function () {
+            const form = document.getElementById('pageJumpForm');
+            const input = document.getElementById('pageJump');
+            if (!form || !input) return;
+
+            // Clamp to [min, max] on submit (works for Enter key or Go button)
+            form.addEventListener('submit', function () {
+                const min = parseInt(input.min || '1', 10);
+                const max = parseInt(input.max || input.value || '1', 10);
+                let v = parseInt(input.value || '1', 10);
+                if (isNaN(v)) v = min;
+                if (v < min) v = min;
+                if (v > max) v = max;
+                input.value = v;
+            });
+        })();
+    </script>
+}

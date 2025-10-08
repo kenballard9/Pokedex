@@ -1,0 +1,347 @@
+﻿@using System.Linq
+@model Pokedex.Models.PokemonDetails
+
+<div style="max-width:1100px;margin:24px auto;padding:16px;background:#fff;border-radius:12px;">
+    <div style="margin-bottom:12px;">
+        @{
+            var returnUrl = ViewBag.ReturnUrl as string;
+            var safeReturnUrl = !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? returnUrl
+            : Url.Action("Index", "Home"); // fallback to your grid page
+        }
+
+        <div style="margin-bottom:12px;">
+            <a class="nav-arrow"
+               href="@(ViewBag.ReturnUrl as string ?? Url.Action("Index", "Home"))">
+                &larr; Back to Pokédex
+            </a>
+        </div>
+    </div>
+
+    <header style="display:flex;align-items:center;gap:16px;border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:16px;">
+        <img src="@Model.ImageUrl" alt="@Model.Name" style="width:160px;height:160px;object-fit:contain;" loading="lazy" decoding="async" />
+        <div>
+            <div style="opacity:.7;">#@Model.Id</div>
+            <h1 style="margin:.25rem 0;">@Model.Name</h1>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                @foreach (var type in Model.Types ?? System.Linq.Enumerable.Empty<string>())
+                {
+                    var lower = (type ?? "").ToLowerInvariant();
+                    <span class="pokemon-type type-@lower" style="padding:6px 10px;border-radius:999px;font-weight:700;">@type</span>
+                }
+            </div>
+            <div style="margin-top:.5rem;opacity:.8;">
+                <strong>Height:</strong> @(Model.Height?.ToString() ?? "—")
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                <strong>Weight:</strong> @(Model.Weight?.ToString() ?? "—")
+            </div>
+        </div>
+    </header>
+
+    <section style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div>
+            <h2 style="margin-top:0;">Base Stats</h2>
+            <div style="
+                    display:grid;
+                    grid-template-columns:max-content max-content;
+                    column-gap:50px;   /* spacing between label and number */
+                    row-gap:6px;
+                    align-items:baseline;">
+                <div>HP</div><div><strong>@Model.HP</strong></div>
+                <div>Attack</div><div><strong>@Model.Attack</strong></div>
+                <div>Defense</div><div><strong>@Model.Defense</strong></div>
+                <div>Sp. Atk</div><div><strong>@Model.SpecialAttack</strong></div>
+                <div>Sp. Def</div><div><strong>@Model.SpecialDefense</strong></div>
+                <div>Speed</div><div><strong>@Model.Speed</strong></div>
+            </div>
+        </div>
+
+        <div>
+            <h2 style="margin-top:0;">Abilities</h2>
+            @if ((Model.AbilityDetails?.Count ?? 0) > 0)
+            {
+                foreach (var ab in Model.AbilityDetails)
+                {
+                    <div style="margin-bottom:.75rem;">
+                        <div><strong>@ab.Name</strong></div>
+                        <div>@(string.IsNullOrWhiteSpace(ab.ShortEffect) ? ab.Effect : ab.ShortEffect)</div>
+                    </div>
+                }
+            }
+            else if ((Model.Abilities?.Count ?? 0) > 0)
+            {
+                <ul>
+                    @foreach (var name in Model.Abilities)
+                    {
+                        <li>@name</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div><em>No abilities found.</em></div>
+            }
+        </div>
+    </section>
+
+    @* ===== EVOLUTION LINE (CENTERED + FIXED ANCHOR) ===== *@
+    @if ((Model.EvolutionLine?.Count ?? 0) > 0)
+    {
+        <section style="margin:18px 0 8px;">
+            <h2 style="margin:0 0 .75rem; text-align:center;">Evolution</h2>
+
+            @{
+                var backUrl = (ViewBag.ReturnUrl as string) ?? Url.Action("Index", "Home");
+            }
+
+            <div style="width:100%; display:flex; justify-content:center;">
+                <div class="evo-row"
+                     style="display:flex; align-items:center; justify-content:center; gap:.5rem; flex-wrap:wrap; max-width:100%;">
+                    @{
+                        for (int i = 0; i < Model.EvolutionLine!.Count; i++)
+                        {
+                            var e = Model.EvolutionLine[i];
+
+                            <a class="evo-card"
+                               href="@Url.Action("Details", "Pokedex", new { id = e.Id, returnUrl = backUrl })"
+                               title="@e.Name"
+                               style="display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:.5rem .6rem;box-shadow:0 1px 0 rgba(0,0,0,.05);min-width:110px;">
+                                <img src="@e.ImageUrl" alt="@e.Name" loading="lazy" decoding="async"
+                                     style="width:84px;height:84px;object-fit:contain;" />
+                                <div style="font-weight:800;color:#111827;line-height:1;">@e.Name</div>
+                                <div style="font-size:.825rem;color:#6b7280;">#@e.Id</div>
+                            </a>
+
+                            if (i < Model.EvolutionLine.Count - 1)
+                            {
+                                <span aria-hidden="true"
+                                      style="font-weight:900;color:#94a3b8;display:inline-flex;align-items:center;justify-content:center;width:28px;">
+                                    &rarr;
+                                </span>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </section>
+    }
+    @* ===== END EVOLUTION LINE ===== *@
+
+    @* ===== TYPE MATCHUPS ===== *@
+    @{
+        Func<string, string> Cap = s => string.IsNullOrEmpty(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
+        Func<double, string> MultLabel = m =>
+        {
+            if (m == 0) return "×0";
+            if (Math.Abs(m - 0.25) < 0.001) return "×¼";
+            if (Math.Abs(m - 0.5) < 0.001) return "×½";
+            if (Math.Abs(m - 2.0) < 0.001) return "×2";
+            if (Math.Abs(m - 4.0) < 0.001) return "×4";
+            return $"×{m:0.##}";
+        };
+
+        var allTypes = new[] { "normal","fire","water","electric","grass","ice","fighting","poison","ground",
+        "flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy" };
+
+        var myTypes = (Model?.Types ?? new List<string>())
+        .Select(t => (t ?? "").ToLowerInvariant())
+        .Where(t => !string.IsNullOrWhiteSpace(t))
+        .Distinct()
+        .ToList();
+
+        var eff = new Dictionary<string, Dictionary<string, double>>
+        {
+        { "normal",  new() { { "rock",0.5 }, { "ghost",0 }, { "steel",0.5 } } },
+        { "fire",    new() { { "fire",0.5 }, { "water",0.5 }, { "grass",2 }, { "ice",2 }, { "bug",2 }, { "rock",0.5 }, { "dragon",0.5 }, { "steel",2 } } },
+        { "water",   new() { { "fire",2 }, { "water",0.5 }, { "grass",0.5 }, { "ground",2 }, { "rock",2 }, { "dragon",0.5 } } },
+        { "electric",new() { { "water",2 }, { "electric",0.5 }, { "grass",0.5 }, { "ground",0 }, { "flying",2 }, { "dragon",0.5 } } },
+        { "grass",   new() { { "fire",0.5 }, { "water",2 }, { "grass",0.5 }, { "poison",0.5 }, { "ground",2 }, { "flying",0.5 }, { "bug",0.5 }, { "rock",2 }, { "dragon",0.5 }, { "steel",0.5 } } },
+        { "ice",     new() { { "fire",0.5 }, { "water",0.5 }, { "grass",2 }, { "ground",2 }, { "flying",2 }, { "dragon",2 }, { "steel",0.5 } } },
+        { "fighting",new() { { "normal",2 }, { "ice",2 }, { "rock",2 }, { "dark",2 }, { "steel",2 }, { "poison",0.5 }, { "flying",0.5 }, { "psychic",0.5 }, { "bug",0.5 }, { "fairy",0.5 }, { "ghost",0 } } },
+        { "poison",  new() { { "grass",2 }, { "poison",0.5 }, { "ground",0.5 }, { "rock",0.5 }, { "ghost",0.5 }, { "steel",0 }, { "fairy",2 } } },
+        { "ground",  new() { { "fire",2 }, { "electric",2 }, { "grass",0.5 }, { "poison",2 }, { "flying",0 }, { "bug",0.5 }, { "rock",2 }, { "steel",2 } } },
+        { "flying",  new() { { "electric",0.5 }, { "grass",2 }, { "fighting",2 }, { "bug",2 }, { "rock",0.5 }, { "steel",0.5 } } },
+        { "psychic", new() { { "fighting",2 }, { "poison",2 }, { "psychic",0.5 }, { "steel",0.5 }, { "dark",0 } } },
+        { "bug",     new() { { "grass",2 }, { "psychic",2 }, { "dark",2 }, { "fire",0.5 }, { "fighting",0.5 }, { "poison",0.5 }, { "flying",0.5 }, { "ghost",0.5 }, { "steel",0.5 }, { "fairy",0.5 } } },
+        { "rock",    new() { { "fire",2 }, { "ice",2 }, { "flying",2 }, { "bug",2 }, { "fighting",0.5 }, { "ground",0.5 }, { "steel",0.5 } } },
+        { "ghost",   new() { { "normal",0 }, { "psychic",2 }, { "ghost",2 }, { "dark",0.5 } } },
+        { "dragon",  new() { { "dragon",2 }, { "steel",0.5 }, { "fairy",0 } } },
+        { "dark",    new() { { "psychic",2 }, { "ghost",2 }, { "fighting",0.5 }, { "dark",0.5 }, { "fairy",0.5 } } },
+        { "steel",   new() { { "rock",2 }, { "ice",2 }, { "fairy",2 }, { "fire",0.5 }, { "water",0.5 }, { "electric",0.5 }, { "steel",0.5 } } },
+        { "fairy",   new() { { "fighting",2 }, { "dragon",2 }, { "dark",2 }, { "fire",0.5 }, { "poison",0.5 }, { "steel",0.5 } } }
+        };
+
+        var defensive = new Dictionary<string, double>();
+        foreach (var atk in allTypes)
+        {
+            double mult = 1.0;
+            foreach (var def in myTypes)
+            {
+                double m = 1.0;
+                if (eff.ContainsKey(atk) && eff[atk].ContainsKey(def)) m = eff[atk][def];
+                mult *= m;
+            }
+            defensive[atk] = mult;
+        }
+
+        var weaknesses = defensive.Where(kv => kv.Value > 1.0).OrderByDescending(kv => kv.Value).ToList();
+        var resistances = defensive.Where(kv => kv.Value > 0 && kv.Value < 1.0).OrderBy(kv => kv.Value).ToList();
+        var immunities = defensive.Where(kv => kv.Value == 0).Select(kv => kv.Key).OrderBy(t => t).ToList();
+
+        var strongAgainst = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var my in myTypes)
+        {
+            if (!eff.ContainsKey(my)) continue;
+            foreach (var defType in allTypes)
+            {
+                var mult = eff[my].ContainsKey(defType) ? eff[my][defType] : 1.0;
+                if (mult > 1.0) strongAgainst.Add(defType);
+            }
+        }
+    }
+
+    @{
+        // We'll reuse this for the return link on the Types details page
+        var detailsReturnUrl = (ViewBag.ReturnUrl as string)
+        ?? Url.Action("Details", "Pokedex", new { id = Model.Id });
+    }
+
+    <section class="type-matchups" style="margin: 1.25rem 0 1.5rem; padding: 1rem; border-radius: .75rem; background: #fff; box-shadow: 0 1px 0 rgba(0,0,0,.06);">
+        <h3 style="margin: 0 0 .75rem; font-size: 1.15rem;">Type Matchups</h3>
+
+        <!-- Strong Against -->
+        <div class="matchup-row" style="display:grid;grid-template-columns:9rem 1fr;align-items:start;gap:.75rem;margin:.35rem 0;">
+            <div class="matchup-label" style="font-weight:700;color:#334155;">Strong Against</div>
+            <div class="matchup-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (strongAgainst.Count == 0)
+                {
+                    <span class="none" style="color:#64748b;">—</span>
+                }
+                else
+                {
+                    foreach (var t in strongAgainst)
+                    {
+                        var lower = (t ?? "").ToLowerInvariant();
+                        var href = Url.Action("Details", "Types", new { name = t, returnUrl = detailsReturnUrl });
+                        <a href="@href"
+                           class="pokemon-type type-@lower type-chip"
+                           role="button"
+                           title="View @Cap(t) type details">
+                            @Cap(t)<small style="font-weight:700;margin-left:.25rem;opacity:.9;"> ×2</small>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Weak to -->
+        <div class="matchup-row" style="display:grid;grid-template-columns:9rem 1fr;align-items:start;gap:.75rem;margin:.35rem 0%;">
+            <div class="matchup-label" style="font-weight:700;color:#334155;">Weak to</div>
+            <div class="matchup-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (weaknesses.Count == 0)
+                {
+                    <span class="none" style="color:#64748b;">—</span>
+                }
+                else
+                {
+                    foreach (var kv in weaknesses)
+                    {
+                        var t = kv.Key; var m = kv.Value;
+                        var lower = (t ?? "").ToLowerInvariant();
+                        var href = Url.Action("Details", "Types", new { name = t, returnUrl = detailsReturnUrl });
+                        <a href="@href"
+                           class="pokemon-type type-@lower type-chip"
+                           role="button"
+                           title="View @Cap(t) type details">
+                            @Cap(t)<small style="font-weight:700;margin-left:.25rem;opacity:.9;"> @MultLabel(m)</small>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Resistant to -->
+        <div class="matchup-row" style="display:grid;grid-template-columns:9rem 1fr;align-items:start;gap:.75rem;margin:.35rem 0%;">
+            <div class="matchup-label" style="font-weight:700;color:#334155;">Resistant to</div>
+            <div class="matchup-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (resistances.Count == 0)
+                {
+                    <span class="none" style="color:#64748b;">—</span>
+                }
+                else
+                {
+                    foreach (var kv in resistances)
+                    {
+                        var t = kv.Key; var m = kv.Value;
+                        var lower = (t ?? "").ToLowerInvariant();
+                        var href = Url.Action("Details", "Types", new { name = t, returnUrl = detailsReturnUrl });
+                        <a href="@href"
+                           class="pokemon-type type-@lower type-chip"
+                           role="button"
+                           title="View @Cap(t) type details">
+                            @Cap(t)<small style="font-weight:700;margin-left:.25rem;opacity:.9;"> @MultLabel(m)</small>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Immune to -->
+        <div class="matchup-row" style="display:grid;grid-template-columns:9rem 1fr;align-items:start;gap:.75rem;margin:.35rem 0%;">
+            <div class="matchup-label" style="font-weight:700;color:#334155;">Immune to</div>
+            <div class="matchup-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @if (immunities.Count == 0)
+                {
+                    <span class="none" style="color:#64748b;">—</span>
+                }
+                else
+                {
+                    foreach (var t in immunities)
+                    {
+                        var lower = (t ?? "").ToLowerInvariant();
+                        var href = Url.Action("Details", "Types", new { name = t, returnUrl = detailsReturnUrl });
+                        <a href="@href"
+                           class="pokemon-type type-@lower type-chip"
+                           role="button"
+                           title="View @Cap(t) type details">
+                            @Cap(t)<small style="font-weight:700;margin-left:.25rem;opacity:.9;"> ×0</small>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+    </section>
+
+    <section style="margin-top:24px;">
+        <h2>Pokédex Entries</h2>
+        @if ((Model.PokedexEntries?.Count ?? 0) > 0)
+        {
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                @foreach (var entry in Model.PokedexEntries)
+                {
+                    <div style="background:#f7f7f7;border:1px solid #e5e5e5;border-radius:8px;padding:10px;">
+                        <strong style="text-transform:capitalize;">@entry.Version</strong>: @entry.Text
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div><em>No Pokédex entries found.</em></div>
+        }
+    </section>
+</div>
+
+<style>
+    .type-chip {
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .type-chip:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+            border-radius: 9999px;
+        }
+</style>
+

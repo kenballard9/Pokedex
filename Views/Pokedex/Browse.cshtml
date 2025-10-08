@@ -1,0 +1,43 @@
+﻿﻿
+@model Pokedex.Models.PokedexIndexViewModel
+
+<h1 style="color:red;font-size:28px;margin:12px 0;">POKEDEX BROWSE (NEW ISOLATED VIEW)</h1>
+
+<!-- Probe link to verify navigation independently -->
+<p><a id="probe" href="/Pokedex/Details/1">Probe: Details #1</a></p>
+
+<section class="pokedex-grid">
+    @foreach (var p in Model.Results)
+    {
+        var typesCsv = string.Join(", ", p.Types ?? new List<string>());
+
+        <!-- PLAIN LINK: clicking navigates to /Pokedex/Details/{id} -->
+        <a class="pokemon-card"
+           href="/Pokedex/Details/@p.Id"
+           aria-label="View details for @p.Name"
+           style="text-decoration:none;color:inherit;display:flex;gap:16px;margin:8px 0;padding:8px;border:1px solid #ddd;border-radius:8px;">
+
+            <div class="pokemon-card-left" style="margin-right:10px;">
+                <img class="pokemon-image" src="@p.ImageUrl" alt="@p.Name" style="width:96px;height:96px;object-fit:contain;" />
+            </div>
+
+            <div class="pokemon-card-right" style="flex:1;">
+                <div class="pokemon-header" style="display:flex;align-items:baseline;gap:8px;">
+                    <span class="pokemon-id" style="opacity:.7;">#@p.Id</span>
+                    <h2 class="pokemon-name" style="margin:0;">@p.Name</h2>
+                </div>
+
+                <div>Type count: @(p.Types?.Count ?? 0)</div>
+                <div>Types: @typesCsv</div>
+
+                <div class="pokemon-types" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                    @foreach (var type in (p.Types ?? new List<string>()))
+                    {
+                        var lower = (type ?? "").ToLowerInvariant();
+                        <span class="pokemon-type type-@lower" style="padding:4px 8px;border-radius:999px;background:#eef;">@type</span>
+                    }
+                </div>
+            </div>
+        </a>
+    }
+</section>
