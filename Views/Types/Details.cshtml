@@ -13,32 +13,29 @@
 
     string Cap(string s) => string.IsNullOrWhiteSpace(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
     string Lower(string s) => (s ?? "").ToLowerInvariant();
+    var selfLower = Lower(Model.TypeName);
 }
 
-<div class="type-detail-page" style="max-width:1100px;margin:24px auto;padding:16px;background:#fff;border-radius:12px;">
-    <div style="margin-bottom:12px;">
-        <a class="nav-arrow" href="@back">&larr; Back</a>
+<div class="type-detail-page">
+    <div class="top-bar">
+        <a class="nav-arrow back-link" href="@back">&larr; Back</a>
     </div>
 
-    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #e5e7eb;padding-bottom:12px;margin-bottom:16px;">
-        <h1 class="pokemon-title" style="margin:0;">
-            @Cap(Model.TypeName) <span style="opacity:.6;font-weight:400;">Type</span>
+    <header class="type-header">
+        <h1 class="type-title">
+            @Cap(Model.TypeName) <span class="type-subtitle">Type</span>
         </h1>
 
-        <!-- Self chip -->
-        @{
-            var selfLower = Lower(Model.TypeName);
-        }
-        <span class="pokemon-type type-@selfLower" style="padding:6px 10px;border-radius:999px;font-weight:700;">
+        <span class="pokemon-type type-@selfLower type-chip type-chip-lg">
             @Cap(Model.TypeName)
         </span>
     </header>
 
-    <section class="type-sections" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <section class="type-sections">
         <!-- Strengths -->
-        <div>
-            <h2 style="margin:0 0 .5rem;">Strengths (Deals 2× To)</h2>
-            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+        <div class="type-card">
+            <h2 class="type-card-title">Strengths <span class="muted">(Deals 2× To)</span></h2>
+            <div class="type-badges">
                 @if (Model.Strengths?.Any() == true)
                 {
                     foreach (var s in Model.Strengths)
@@ -54,15 +51,15 @@
                 }
                 else
                 {
-                    <span class="muted" style="color:#64748b;">None</span>
+                    <span class="muted">None</span>
                 }
             </div>
         </div>
 
         <!-- Weak to -->
-        <div>
-            <h2 style="margin:0 0 .5rem;">Weak to (Takes 2× From)</h2>
-            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+        <div class="type-card">
+            <h2 class="type-card-title">Weak to <span class="muted">(Takes 2× From)</span></h2>
+            <div class="type-badges">
                 @if (Model.Weaknesses?.Any() == true)
                 {
                     foreach (var w in Model.Weaknesses)
@@ -78,15 +75,15 @@
                 }
                 else
                 {
-                    <span class="muted" style="color:#64748b;">None</span>
+                    <span class="muted">None</span>
                 }
             </div>
         </div>
 
         <!-- Resistant to -->
-        <div>
-            <h2 style="margin:0 0 .5rem;">Resistant to (Takes ½× From)</h2>
-            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+        <div class="type-card">
+            <h2 class="type-card-title">Resistant to <span class="muted">(Takes ½× From)</span></h2>
+            <div class="type-badges">
                 @if (Model.Resistances?.Any() == true)
                 {
                     foreach (var r in Model.Resistances)
@@ -102,15 +99,15 @@
                 }
                 else
                 {
-                    <span class="muted" style="color:#64748b;">None</span>
+                    <span class="muted">None</span>
                 }
             </div>
         </div>
 
         <!-- Immune to -->
-        <div>
-            <h2 style="margin:0 0 .5rem;">Immune to (Takes 0× From)</h2>
-            <div class="type-badges" style="display:flex;flex-wrap:wrap;gap:.4rem;">
+        <div class="type-card">
+            <h2 class="type-card-title">Immune to <span class="muted">(Takes 0× From)</span></h2>
+            <div class="type-badges">
                 @if (Model.Immunities?.Any() == true)
                 {
                     foreach (var i in Model.Immunities)
@@ -126,18 +123,17 @@
                 }
                 else
                 {
-                    <span class="muted" style="color:#64748b;">None</span>
+                    <span class="muted">None</span>
                 }
             </div>
         </div>
     </section>
 
-    <!-- Optional: show “related” quick nav (all types) -->
     @if (Model.AllTypes?.Any() == true)
     {
-        <section style="margin-top:20px;">
-            <h3 style="margin:0 0 .5rem;">Jump to Type</h3>
-            <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+        <section class="all-types">
+            <h3 class="all-types-title">Jump to Type</h3>
+            <div class="type-badges">
                 @foreach (var t in Model.AllTypes)
                 {
                     var lower = Lower(t);
@@ -151,17 +147,153 @@
 </div>
 
 <style>
-    /* Make anchor chips feel like buttons; uses your existing .pokemon-type palette */
-    .type-chip {
-        text-decoration: none;
-        cursor: pointer;
-        padding: 6px 10px;
-        border-radius: 9999px;
-        font-weight: 700;
+    /* ====== Layout & Card ====== */
+    :root {
+        --page-bg: #f6f8fb;
+        --card-bg: #ffffff;
+        --border: #e5e7eb;
+        --shadow: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+        --text: #0f172a; /* slate-900 */
+        --text-muted: #64748b; /* slate-500 */
+        --accent: #334155; /* slate-700 */
+        --radius: 14px;
+        --gap-lg: 24px;
+        --gap-md: 16px;
+        --gap-sm: 10px;
     }
 
-        .type-chip:focus-visible {
-            outline: 2px solid currentColor;
-            outline-offset: 2px;
-        }
+    body {
+        background: var(--page-bg);
+    }
+
+    .type-detail-page {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 20px;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        color: var(--text);
+    }
+
+    /* Top bar */
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .back-link {
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    /* Header */
+    .type-header {
+        display: grid;
+        grid-template-columns: 1fr max-content;
+        align-items: center;
+        gap: var(--gap-md);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 12px;
+        margin-bottom: var(--gap-lg);
+    }
+
+    .type-title {
+        margin: 0;
+        font-size: clamp(1.4rem, 2vw, 1.8rem);
+        line-height: 1.2;
+    }
+
+    .type-subtitle {
+        opacity: .6;
+        font-weight: 400;
+    }
+
+    /* Sections grid */
+    .type-sections {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--gap-lg);
+    }
+
+
+    /* Cards */
+    .type-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-sm);
+    }
+
+    .type-card-title {
+        margin: 0 0 4px 0;
+        font-size: 1.05rem;
+        color: var(--accent);
+    }
+
+    .muted {
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* Badge rows */
+    .type-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Chips (rely on your existing .pokemon-type .type-<name> color classes) */
+    .type-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        padding: 8px 12px;
+        border-radius: 9999px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow: 0 1px 0 rgba(0,0,0,.04);
+        border: 1px solid rgba(0,0,0,.06);
+        transition: transform .06s ease, box-shadow .12s ease, opacity .12s ease;
+        user-select: none;
+    }
+
+    .type-chip-lg {
+        padding: 10px 14px;
+        min-width: 110px;
+    }
+
+    .type-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+
+    .type-chip:active {
+        transform: translateY(0);
+    }
+
+    .type-chip:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+    }
+
+    /* All Types section */
+    .all-types {
+        margin-top: 24px;
+    }
+
+    .all-types-title {
+        margin: 0 0 8px 0;
+        font-size: 1rem;
+        color: var(--accent);
+    }
 </style>
