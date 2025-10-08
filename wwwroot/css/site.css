@@ -568,4 +568,38 @@ h1, h2 {
         flex-wrap: wrap;
     }
 
+    /* ====== Navigation Bar ====== */
+    .pokedex-nav {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        background: linear-gradient(90deg, var(--dex-red), var(--dex-dark));
+        border-bottom: 3px solid var(--dex-yellow);
+        padding: 10px 20px;
+        border-top-left-radius: 18px;
+        border-top-right-radius: 18px;
+    }
+
+    .nav-link {
+        color: var(--dex-yellow);
+        text-decoration: none;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 12px;
+        margin-left: 20px;
+        text-shadow: 1px 1px 0 var(--dex-blue);
+        transition: all 0.15s ease;
+    }
+
+        .nav-link:hover {
+            color: #fff;
+            text-shadow: 0 0 6px var(--dex-yellow);
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            color: #fff;
+            border-bottom: 2px solid var(--dex-yellow);
+        }
+
+
 }

@@ -23,9 +23,14 @@
 
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-                        <!-- Home only -->
+                        <!-- Home -->
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+
+                        <!-- Types -->
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Types" asp-action="Details" asp-route-name="fire">Types</a>
                         </li>
                     </ul>
                 </div>
