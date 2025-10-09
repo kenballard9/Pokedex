@@ -30,5 +30,7 @@ namespace Pokedex.Services
         // Type counts (for paging)
         Task<int> GetTypeCountAsync(string typeName);
 
+        Task<PokeApiPokemon?> GetPokemonAsync(string idOrName, CancellationToken ct = default);
+
     }
 }

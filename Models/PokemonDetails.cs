@@ -27,6 +27,8 @@ namespace Pokedex.Models
         public int SpecialDefense { get; set; }
         public int Speed { get; set; }
 
+        public List<MoveLearnRow> Moves { get; set; } = new();
+
         // Abilities (names only)
         public List<string> Abilities { get; set; } = new();
 
@@ -52,4 +54,15 @@ namespace Pokedex.Models
         public string? ShortEffect { get; set; }
         public string? Effect { get; set; }
     }
-}
+
+
+}   
+
+    public class MoveLearnRow
+    {
+        public string MoveName { get; set; } = "";
+        public int Level { get; set; }                // 0 if not learned by level-up
+        public string Method { get; set; } = "";      // "level-up", "machine", "tutor", "egg", etc.
+        public string VersionGroup { get; set; } = ""; // e.g., "scarlet-violet"
+    }
+

@@ -702,5 +702,20 @@ namespace Pokedex.Services
         }
         // ============================================================================
 
+        public async Task<PokeApiPokemon?> GetPokemonAsync(string idOrName, CancellationToken ct = default)
+        {
+            var endpoint = $"pokemon/{idOrName.ToLowerInvariant()}";
+            using var resp = await _http.GetAsync(endpoint, ct);
+            if (!resp.IsSuccessStatusCode) return null;
+
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            var data = await JsonSerializer.DeserializeAsync<PokeApiPokemon>(
+                stream,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true },
+                ct
+            );
+            return data;
+        }
+
     }
 }

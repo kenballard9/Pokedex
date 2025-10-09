@@ -312,6 +312,103 @@
         </div>
     </section>
 
+    @* ===== MOVES & LEARN LEVELS — TABBED BY VERSION GROUP ===== *@
+    @{
+        string Pretty(string s) => string.IsNullOrWhiteSpace(s) ? "—" : s.Replace("-", " ");
+        var hasMoves = (Model.Moves?.Count ?? 0) > 0;
+        var groups = hasMoves
+        ? Model.Moves
+        .Select(m => m.VersionGroup ?? "")
+        .Where(v => !string.IsNullOrWhiteSpace(v))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .OrderBy(v => v) // alphabetical; change if you prefer a custom order
+        .ToList()
+        : new List<string>();
+        // Create safe IDs for tabs/panels
+        Func<string, string> GroupId = g => "vg-" + (g ?? "").ToLowerInvariant().Replace(' ', '-');
+    }
+
+    <section style="margin-top:24px;">
+        <h2 style="margin:0 0 12px 0;">Moves &amp; Learn Levels</h2>
+
+        @if (!hasMoves)
+        {
+            <div><em>No move data available.</em></div>
+        }
+        else
+        {
+            <div role="tablist" aria-label="Version Groups" class="vg-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px 0;">
+                @for (int i = 0; i < groups.Count; i++)
+                {
+                    var g = groups[i];
+                    var id = GroupId(g);
+                    var selected = i == 0 ? "true" : "false";
+                    var activeClass = i == 0 ? "vg-tab--active" : "";
+                    <button role="tab"
+                            aria-selected="@selected"
+                            aria-controls="@id"
+                            id="@($"{id}-tab")"
+                            class="vg-tab @activeClass"
+                            data-target="#@id"
+                            style="border:1px solid #d1d5db;padding:6px 10px;border-radius:999px;background:#f8fafc;cursor:pointer;">
+                        @Pretty(g)
+                    </button>
+                }
+            </div>
+
+            @for (int i = 0; i < groups.Count; i++)
+            {
+                var g = groups[i];
+                var id = GroupId(g);
+                var hidden = i == 0 ? "" : "hidden";
+                <div role="tabpanel"
+                     id="@id"
+                     aria-labelledby="@($"{id}-tab")"
+                     class="vg-pane"
+                     @hidden
+                     style="margin-top:6px;">
+                    <div style="overflow:auto;border:1px solid #e5e7eb;border-radius:10px;">
+                        <table style="width:100%;border-collapse:collapse;font-size:0.95rem;min-width:720px;">
+                            <thead style="background:#f8fafc;">
+                                <tr>
+                                    <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Move</th>
+                                    <th style="text-align:right;padding:10px;border-bottom:1px solid #e5e7eb;">Level</th>
+                                    <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Method</th>
+                                    <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Version Group</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in Model.Moves.Where(m => string.Equals(m.VersionGroup, g, System.StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    var levelDisplay = string.Equals(row.Method, "level-up", System.StringComparison.OrdinalIgnoreCase)
+                                    ? (row.Level > 0 ? row.Level.ToString() : "—")
+                                    : "—";
+
+                                    <tr>
+                                        <td style="padding:10px;border-bottom:1px solid #f0f2f5;text-transform:capitalize;">
+                                            @row.MoveName
+                                        </td>
+                                        <td style="padding:10px;border-bottom:1px solid #f0f2f5;text-align:right;">
+                                            @levelDisplay
+                                        </td>
+                                        <td style="padding:10px;border-bottom:1px solid #f0f2f5;">
+                                            <span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#eef;">
+                                                @Pretty(row.Method)
+                                            </span>
+                                        </td>
+                                        <td style="padding:10px;border-bottom:1px solid #f0f2f5;text-transform:capitalize;">
+                                            @Pretty(row.VersionGroup)
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
+    </section>
+
     <section style="margin-top:24px;">
         <h2>Pokédex Entries</h2>
         @if ((Model.PokedexEntries?.Count ?? 0) > 0)
@@ -343,5 +440,60 @@
             outline-offset: 2px;
             border-radius: 9999px;
         }
+
+    /* Tabs */
+    .vg-tab--active {
+        background: #e5e7eb !important;
+        border-color: #9ca3af !important;
+        font-weight: 700;
+    }
+
+    .vg-tabs:has(.vg-tab:focus-visible) .vg-tab {
+        outline: none;
+    }
 </style>
 
+<script>
+    (function () {
+        const tabs = document.querySelectorAll('.vg-tab');
+        const panes = document.querySelectorAll('.vg-pane');
+
+        function show(targetSel) {
+            panes.forEach(p => {
+                if ('#' + p.id === targetSel) {
+                    p.removeAttribute('hidden');
+                } else {
+                    p.setAttribute('hidden', 'hidden');
+                }
+            });
+            tabs.forEach(t => {
+                if (t.dataset.target === targetSel) {
+                    t.classList.add('vg-tab--active');
+                    t.setAttribute('aria-selected', 'true');
+                } else {
+                    t.classList.remove('vg-tab--active');
+                    t.setAttribute('aria-selected', 'false');
+                }
+            });
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => show(tab.dataset.target));
+            tab.addEventListener('keydown', (e) => {
+                // Left/Right keyboard navigation
+                const idx = Array.prototype.indexOf.call(tabs, tab);
+                if (e.key === 'ArrowRight') {
+                    const next = tabs[(idx + 1) % tabs.length];
+                    next.focus();
+                    show(next.dataset.target);
+                    e.preventDefault();
+                } else if (e.key === 'ArrowLeft') {
+                    const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+                    prev.focus();
+                    show(prev.dataset.target);
+                    e.preventDefault();
+                }
+            });
+        });
+    })();
+</script>

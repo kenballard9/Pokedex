@@ -4,12 +4,22 @@ using Pokedex.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
+using System;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace Pokedex.Controllers
 {
     public class PokedexController : Controller
     {
         private readonly IPokeApiClient _client;
+
+        // Shared HttpClient for fallback fetch
+        private static readonly HttpClient s_http = new HttpClient
+        {
+            BaseAddress = new Uri("https://pokeapi.co/api/v2/")
+        };
 
         public PokedexController(IPokeApiClient client)
         {
@@ -33,19 +43,151 @@ namespace Pokedex.Controllers
         }
 
         [HttpGet]
-        [HttpGet]
         public async Task<IActionResult> Details(string id, string? returnUrl, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(id)) return NotFound();
 
-            // Stash the return URL so the view can render a "Back to Pokédex" link
+            // Allow the view to render a "Back to Pokédex" link
             ViewBag.ReturnUrl = returnUrl;
 
+            // 1) Get your existing Details view model (abilities, stats, evo, entries, etc.)
             var details = await _client.GetDetailsAsync(id);
             if (details == null) return NotFound();
+
+            // 2) Ensure Moves exists
+            details.Moves ??= new List<MoveLearnRow>();
+
+            // 3) Try to map moves from your client (strongly-typed PokeApiPokemon)
+            var moveRows = await TryMapMovesFromClientAsync(id, ct);
+
+            // 4) Fallback: if still empty, fetch from PokéAPI directly
+            if (moveRows.Count == 0)
+            {
+                moveRows = await TryGetMovesViaFallbackAsync(id, ct);
+            }
+
+            // 5) Sort and assign
+            details.Moves = moveRows
+                .OrderBy(x => x.Method == "level-up" ? 0 : 1)
+                .ThenBy(x => x.Level == 0 ? int.MaxValue : x.Level)
+                .ThenBy(x => x.MoveName)
+                .ToList();
 
             return View(details);
         }
 
+        /// <summary>
+        /// Attempts to read moves using your IPokeApiClient.GetPokemonAsync(id).
+        /// Uses strong typing: PokeApiPokemon.Moves (PascalCase).
+        /// Returns an empty list if data isn't present.
+        /// </summary>
+        private async Task<List<MoveLearnRow>> TryMapMovesFromClientAsync(string id, CancellationToken ct)
+        {
+            var rows = new List<MoveLearnRow>();
+
+            try
+            {
+                var pokemon = await _client.GetPokemonAsync(id, ct);
+                if (pokemon == null || pokemon.Moves == null) return rows;
+
+                foreach (var m in pokemon.Moves)
+                {
+                    var moveName = m?.Move?.Name ?? "";
+                    if (string.IsNullOrWhiteSpace(moveName)) continue;
+
+                    foreach (var v in m.VersionGroupDetails ?? Enumerable.Empty<PokeApiVersionGroupDetail>())
+                    {
+                        rows.Add(new MoveLearnRow
+                        {
+                            MoveName = moveName,
+                            Level = v.LevelLearnedAt,                    // 0 for TM/tutor/egg
+                            Method = v.MoveLearnMethod?.Name ?? "",
+                            VersionGroup = v.VersionGroup?.Name ?? ""
+                        });
+                    }
+                }
+            }
+            catch
+            {
+                // swallow; we'll try fallback
+            }
+
+            return rows;
+        }
+
+        /// <summary>
+        /// Directly fetches https://pokeapi.co/api/v2/pokemon/{id-or-name} and parses moves.
+        /// Uses System.Text.Json and no extra DTOs (just for fallback).
+        /// </summary>
+        private static async Task<List<MoveLearnRow>> TryGetMovesViaFallbackAsync(string idOrName, CancellationToken ct)
+        {
+            var rows = new List<MoveLearnRow>();
+
+            try
+            {
+                var path = $"pokemon/{idOrName.ToLowerInvariant()}";
+                using var resp = await s_http.GetAsync(path, ct);
+                if (!resp.IsSuccessStatusCode) return rows;
+
+                await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+                using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+
+                if (!doc.RootElement.TryGetProperty("moves", out var movesElem) || movesElem.ValueKind != JsonValueKind.Array)
+                    return rows;
+
+                foreach (var move in movesElem.EnumerateArray())
+                {
+                    string moveName = "";
+                    if (move.TryGetProperty("move", out var moveObj) &&
+                        moveObj.TryGetProperty("name", out var moveNameElem) &&
+                        moveNameElem.ValueKind == JsonValueKind.String)
+                    {
+                        moveName = moveNameElem.GetString() ?? "";
+                    }
+                    if (string.IsNullOrWhiteSpace(moveName)) continue;
+
+                    if (!move.TryGetProperty("version_group_details", out var vgdElem) || vgdElem.ValueKind != JsonValueKind.Array)
+                        continue;
+
+                    foreach (var v in vgdElem.EnumerateArray())
+                    {
+                        int level = 0;
+                        string method = "";
+                        string version = "";
+
+                        if (v.TryGetProperty("level_learned_at", out var lvlElem) && lvlElem.TryGetInt32(out var lvl))
+                            level = lvl;
+
+                        if (v.TryGetProperty("move_learn_method", out var mlm) &&
+                            mlm.TryGetProperty("name", out var mlmName) &&
+                            mlmName.ValueKind == JsonValueKind.String)
+                        {
+                            method = mlmName.GetString() ?? "";
+                        }
+
+                        if (v.TryGetProperty("version_group", out var vg) &&
+                            vg.TryGetProperty("name", out var vgName) &&
+                            vgName.ValueKind == JsonValueKind.String)
+                        {
+                            version = vgName.GetString() ?? "";
+                        }
+
+                        rows.Add(new MoveLearnRow
+                        {
+                            MoveName = moveName,
+                            Level = level,
+                            Method = method,
+                            VersionGroup = version
+                        });
+                    }
+                }
+            }
+            catch
+            {
+                // ignore; return whatever we have (likely empty)
+            }
+
+            return rows;
+        }
     }
 }
