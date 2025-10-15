@@ -64,5 +64,6 @@ namespace Pokedex.Models
         public int Level { get; set; }                // 0 if not learned by level-up
         public string Method { get; set; } = "";      // "level-up", "machine", "tutor", "egg", etc.
         public string VersionGroup { get; set; } = ""; // e.g., "scarlet-violet"
-    }
+        public string? MoveType { get; set; }
+}
 

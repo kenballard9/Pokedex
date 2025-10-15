@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;                    // <-- added (for IOException in retry helper)
+using System.IO;                    // for IOException in retry helper
 using Microsoft.Extensions.Caching.Memory;
 using Pokedex.Models;
 
@@ -15,7 +15,7 @@ namespace Pokedex.Services
 {
     /// <summary>
     /// HttpClient-based implementation for calling PokéAPI (https://pokeapi.co/).
-    /// Uses IMemoryCache and singleflight-style coalescing to reduce calls.
+    /// Uses IMemoryCache, singleflight-style coalescing, and selective hydration for performance.
     /// </summary>
     public class PokeApiClient : IPokeApiClient
     {
@@ -26,6 +26,12 @@ namespace Pokedex.Services
 
         // Coalesce concurrent requests for the same cache key
         private static readonly ConcurrentDictionary<string, Lazy<Task<object?>>> _inflight = new();
+
+        // Cache for move -> type lookups to avoid repeated network calls
+        private static readonly ConcurrentDictionary<string, string?> _moveTypeCache =
+            new(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly SemaphoreSlim _moveTypeGate = new(initialCount: 6, maxCount: 6);
 
         // TTLs (tune to taste)
         private static readonly TimeSpan TTL_Detail = TimeSpan.FromHours(12);
@@ -140,17 +146,23 @@ namespace Pokedex.Services
             return results;
         }
 
-        // ---------------- Detailed (stats + abilities + evolution) ----------------
+        // ---------------- Detailed (stats + abilities + evolution [+ optional move types]) ----------------
 
-        public async Task<PokemonDetails?> GetDetailsAsync(string nameOrId, CancellationToken ct = default)
+        public Task<PokemonDetails?> GetDetailsAsync(string nameOrId, CancellationToken ct = default)
+            => GetDetailsCoreAsync(nameOrId, includeMoveTypes: true, ct);   // FULL details for Details page
+
+        private async Task<PokemonDetails?> GetDetailsCoreAsync(string nameOrId, bool includeMoveTypes, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(nameOrId)) return null;
             var slug = nameOrId.Trim().ToLowerInvariant();
 
-            return await GetCachedAsync<PokemonDetails?>($"pdet:{slug}", TTL_Detail, async () =>
+            // separate cache buckets for lite/full to avoid cross-contamination
+            var cacheKey = $"pdet:{slug}:{(includeMoveTypes ? "full" : "lite")}";
+
+            return await GetCachedAsync<PokemonDetails?>(cacheKey, TTL_Detail, async () =>
             {
                 // ---- /pokemon/{nameOrId} ----
-                using var res = await GetWithRetriesAsync($"pokemon/{slug}", ct);   // <-- switched to retry helper
+                using var res = await GetWithRetriesAsync($"pokemon/{slug}", ct);
                 if (!res.IsSuccessStatusCode) return null;
 
                 await using var stream = await res.Content.ReadAsStreamAsync(ct);
@@ -165,7 +177,7 @@ namespace Pokedex.Services
                     Types = ExtractTypes(root)
                 };
 
-                // Height / Weight (PokéAPI units: decimetres & hectograms)
+                // Height / Weight
                 if (root.TryGetProperty("height", out var heightEl) && heightEl.ValueKind == JsonValueKind.Number)
                     details.Height = heightEl.GetInt32();
                 if (root.TryGetProperty("weight", out var weightEl) && weightEl.ValueKind == JsonValueKind.Number)
@@ -203,6 +215,89 @@ namespace Pokedex.Services
                 }
                 details.Abilities = abilityNames;
 
+                // MOVES (optionally include MoveType)
+                var moveRows = new List<MoveLearnRow>();
+                if (root.TryGetProperty("moves", out var movesEl) && movesEl.ValueKind == JsonValueKind.Array)
+                {
+                    if (!includeMoveTypes)
+                    {
+                        // Lite mode: don't fetch types; render names/levels/methods only
+                        foreach (var m in movesEl.EnumerateArray())
+                        {
+                            var moveNameSlug = m.GetProperty("move").GetProperty("name").GetString() ?? "";
+                            if (string.IsNullOrWhiteSpace(moveNameSlug)) continue;
+
+                            var moveDisplayName = moveNameSlug.Replace("-", " ");
+                            if (m.TryGetProperty("version_group_details", out var vgdArr))
+                            {
+                                foreach (var vgd in vgdArr.EnumerateArray())
+                                {
+                                    var vg = vgd.GetProperty("version_group").GetProperty("name").GetString() ?? "";
+                                    var method = vgd.GetProperty("move_learn_method").GetProperty("name").GetString() ?? "";
+                                    var level = vgd.TryGetProperty("level_learned_at", out var lvlEl) && lvlEl.ValueKind == JsonValueKind.Number
+                                        ? lvlEl.GetInt32()
+                                        : 0;
+
+                                    moveRows.Add(new MoveLearnRow
+                                    {
+                                        MoveName = moveDisplayName,
+                                        VersionGroup = vg,
+                                        Method = method,
+                                        Level = level,
+                                        MoveType = null
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Full mode: fetch move types (cached + concurrent)
+                        var uniqueMoveNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var mv in movesEl.EnumerateArray())
+                        {
+                            var moveName = mv.GetProperty("move").GetProperty("name").GetString();
+                            if (!string.IsNullOrWhiteSpace(moveName))
+                                uniqueMoveNames.Add(moveName);
+                        }
+
+                        var typeTasks = uniqueMoveNames.ToDictionary(n => n, n => GetMoveTypeAsync(n, ct));
+                        await Task.WhenAll(typeTasks.Values);
+
+                        foreach (var mv in movesEl.EnumerateArray())
+                        {
+                            var moveNameSlug = mv.GetProperty("move").GetProperty("name").GetString() ?? "";
+                            if (string.IsNullOrWhiteSpace(moveNameSlug)) continue;
+
+                            var moveDisplayName = moveNameSlug.Replace("-", " ");
+                            var moveType = typeTasks.TryGetValue(moveNameSlug, out var task) ? task.Result : null;
+
+                            if (mv.TryGetProperty("version_group_details", out var vgdArr))
+                            {
+                                foreach (var vgd in vgdArr.EnumerateArray())
+                                {
+                                    var vg = vgd.GetProperty("version_group").GetProperty("name").GetString() ?? "";
+                                    var method = vgd.GetProperty("move_learn_method").GetProperty("name").GetString() ?? "";
+                                    var level = vgd.TryGetProperty("level_learned_at", out var lvlEl) && lvlEl.ValueKind == JsonValueKind.Number
+                                        ? lvlEl.GetInt32()
+                                        : 0;
+
+                                    moveRows.Add(new MoveLearnRow
+                                    {
+                                        MoveName = moveDisplayName,
+                                        VersionGroup = vg,
+                                        Method = method,
+                                        Level = level,
+                                        MoveType = moveType
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                details.Moves = moveRows;
+
                 // ---- Fetch extras concurrently (all cached) ----
                 var abilityDefsTask = ExtractAbilityDefinitionsCachedAsync(abilityNames, ct);
                 var speciesTask = GetSpeciesEntriesCachedAsync(details.Id, ct);
@@ -226,7 +321,7 @@ namespace Pokedex.Services
                 var slug = displayName.ToLowerInvariant().Replace(' ', '-');
                 return await GetCachedAsync<AbilityDefinition?>($"ability:{slug}", TTL_Lookup, async () =>
                 {
-                    using var res = await GetWithRetriesAsync($"ability/{slug}", ct);   // <-- switched to retry helper
+                    using var res = await GetWithRetriesAsync($"ability/{slug}", ct);
                     if (!res.IsSuccessStatusCode) return null;
 
                     await using var stream = await res.Content.ReadAsStreamAsync(ct);
@@ -267,7 +362,7 @@ namespace Pokedex.Services
             {
                 var entries = new List<PokedexEntry>();
 
-                using var res = await GetWithRetriesAsync($"pokemon-species/{id}", ct);  // <-- switched to retry helper
+                using var res = await GetWithRetriesAsync($"pokemon-species/{id}", ct);
                 if (!res.IsSuccessStatusCode) return entries;
 
                 await using var stream = await res.Content.ReadAsStreamAsync(ct);
@@ -353,8 +448,8 @@ namespace Pokedex.Services
             var list = new List<PokemonDetails>();
             var ids = await GetPokemonIdsForPageAsync(page, pageSize, ct);
 
-            // Hydrate details (each call is cached ~12h)
-            var tasks = ids.Select(id => GetDetailsAsync(id.ToString(), ct));
+            // Hydrate "LITE" details (no move types) for grid speed
+            var tasks = ids.Select(id => GetDetailsCoreAsync(id.ToString(), includeMoveTypes: false, ct));
             var dtos = await Task.WhenAll(tasks);
             foreach (var d in dtos)
                 if (d != null) list.Add(d);
@@ -391,7 +486,8 @@ namespace Pokedex.Services
 
             var pageNames = names.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            var tasks = pageNames.Select(n => GetDetailsAsync(n, ct));
+            // Hydrate "LITE" details (no move types) for grid speed
+            var tasks = pageNames.Select(n => GetDetailsCoreAsync(n, includeMoveTypes: false, ct));
             var dtos = await Task.WhenAll(tasks);
             foreach (var d in dtos)
                 if (d != null) details.Add(d);
@@ -531,7 +627,7 @@ namespace Pokedex.Services
             return GetCachedAsync<List<PokemonListItem>>($"evo:{speciesOrPokemonId}", TTL_Lookup, async () =>
             {
                 // 1) species -> evolution_chain URL
-                using var res1 = await GetWithRetriesAsync($"pokemon-species/{speciesOrPokemonId}", ct); // <-- switched
+                using var res1 = await GetWithRetriesAsync($"pokemon-species/{speciesOrPokemonId}", ct);
                 if (!res1.IsSuccessStatusCode) return new List<PokemonListItem>();
                 await using var s1 = await res1.Content.ReadAsStreamAsync(ct);
                 using var d1 = await JsonDocument.ParseAsync(s1, cancellationToken: ct);
@@ -541,7 +637,7 @@ namespace Pokedex.Services
                 if (chainId <= 0) return new List<PokemonListItem>();
 
                 // 2) evolution-chain/{id}
-                using var res2 = await GetWithRetriesAsync($"evolution-chain/{chainId}", ct);          // <-- switched
+                using var res2 = await GetWithRetriesAsync($"evolution-chain/{chainId}", ct);
                 if (!res2.IsSuccessStatusCode) return new List<PokemonListItem>();
                 await using var s2 = await res2.Content.ReadAsStreamAsync(ct);
                 using var d2 = await JsonDocument.ParseAsync(s2, cancellationToken: ct);
@@ -549,7 +645,6 @@ namespace Pokedex.Services
                 var list = new List<PokemonListItem>();
                 void Walk(JsonElement node)
                 {
-                    // node.species.url -> pokemon-species/{id}/
                     var sp = node.GetProperty("species");
                     var spName = sp.GetProperty("name").GetString() ?? "";
                     var spUrl = sp.GetProperty("url").GetString() ?? "";
@@ -606,6 +701,54 @@ namespace Pokedex.Services
             }
         }
 
+        // ============= Move type lookup (cached) ===================
+        // at top of the class (with other statics
+
+        // ...
+
+        private async Task<string?> GetMoveTypeAsync(string moveName, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(moveName)) return null;
+
+            if (_moveTypeCache.TryGetValue(moveName, out var cached))
+                return cached;
+
+            var slug = moveName.Trim().ToLowerInvariant();
+
+            await _moveTypeGate.WaitAsync(ct); // throttle to avoid 429s
+            try
+            {
+                using var res = await GetWithRetriesAsync($"move/{slug}", ct);
+                if (!res.IsSuccessStatusCode)
+                {
+                    _moveTypeCache[moveName] = null; // cache negative to avoid refetch storms
+                    return null;
+                }
+
+                await using var s = await res.Content.ReadAsStreamAsync(ct);
+                using var doc = await JsonDocument.ParseAsync(s, cancellationToken: ct);
+
+                string? typeName = null;
+                if (doc.RootElement.TryGetProperty("type", out var typeObj) &&
+                    typeObj.TryGetProperty("name", out var typeNameEl) &&
+                    typeNameEl.ValueKind == JsonValueKind.String)
+                {
+                    typeName = typeNameEl.GetString(); // e.g., "fire"
+                }
+
+                _moveTypeCache[moveName] = typeName; // cache even null
+                return typeName;
+            }
+            finally
+            {
+                _moveTypeGate.Release();
+            }
+        }
+
+
+
+        // ===========================================================
+
         // === Interface wrappers (no CancellationToken) ================================
         public Task<List<string>> GetTypesAsync()
             => GetTypesAsync(default);
@@ -638,7 +781,7 @@ namespace Pokedex.Services
             => GetTypeCountAsync(typeName, default);
         // ============================================================================
 
-        // =================== RETRY HELPER (added) ===================================
+        // =================== RETRY HELPER ===========================================
         // Retries GETs on transient failures (429/5xx, connection resets, timeouts) with backoff + jitter.
         private async Task<HttpResponseMessage> GetWithRetriesAsync(string relativeUrl, CancellationToken ct)
         {
@@ -646,7 +789,6 @@ namespace Pokedex.Services
 
             TimeSpan ComputeDelay(int attempt, HttpResponseMessage? res = null)
             {
-                // Honor Retry-After if present
                 if (res?.Headers?.RetryAfter != null)
                 {
                     var ra = res.Headers.RetryAfter;
@@ -658,8 +800,7 @@ namespace Pokedex.Services
                     }
                 }
 
-                // Exponential backoff with jitter
-                var baseMs = 250 * Math.Pow(2, attempt - 1); // 250ms, 500ms, 1000ms, 2000ms
+                var baseMs = 250 * Math.Pow(2, attempt - 1); // 250, 500, 1000, 2000
                 var jitterMs = Random.Shared.Next(50, 200);
                 return TimeSpan.FromMilliseconds(baseMs + jitterMs);
             }
@@ -670,7 +811,6 @@ namespace Pokedex.Services
                 {
                     var res = await _http.GetAsync(relativeUrl, ct);
 
-                    // Retry on 429 or 5xx. On last attempt, return whatever we got.
                     if ((int)res.StatusCode == 429 || (int)res.StatusCode >= 500)
                     {
                         if (attempt == maxAttempts) return res;
@@ -680,7 +820,7 @@ namespace Pokedex.Services
                         continue;
                     }
 
-                    return res; // success or non-retriable status (e.g., 404)
+                    return res;
                 }
                 catch (HttpRequestException) when (attempt < maxAttempts)
                 {
@@ -692,20 +832,21 @@ namespace Pokedex.Services
                 }
                 catch (TaskCanceledException) when (!ct.IsCancellationRequested && attempt < maxAttempts)
                 {
-                    // timeout (not user-canceled)
                     await Task.Delay(ComputeDelay(attempt), ct);
                 }
             }
 
-            // If we ever get here (we shouldn’t), do a final try without swallowing exceptions
             return await _http.GetAsync(relativeUrl, ct);
         }
         // ============================================================================
 
+        // Satisfy interface member
         public async Task<PokeApiPokemon?> GetPokemonAsync(string idOrName, CancellationToken ct = default)
         {
+            if (string.IsNullOrWhiteSpace(idOrName)) return null;
+
             var endpoint = $"pokemon/{idOrName.ToLowerInvariant()}";
-            using var resp = await _http.GetAsync(endpoint, ct);
+            using var resp = await GetWithRetriesAsync(endpoint, ct);
             if (!resp.IsSuccessStatusCode) return null;
 
             await using var stream = await resp.Content.ReadAsStreamAsync(ct);
@@ -716,6 +857,5 @@ namespace Pokedex.Services
             );
             return data;
         }
-
     }
 }

@@ -50,28 +50,34 @@ namespace Pokedex.Controllers
             // Allow the view to render a "Back to Pokédex" link
             ViewBag.ReturnUrl = returnUrl;
 
-            // 1) Get your existing Details view model (abilities, stats, evo, entries, etc.)
+            // ✅ FULL details path: includes move types (chips)
             var details = await _client.GetDetailsAsync(id);
             if (details == null) return NotFound();
 
-            // 2) Ensure Moves exists
-            details.Moves ??= new List<MoveLearnRow>();
-
-            // 3) Try to map moves from your client (strongly-typed PokeApiPokemon)
-            var moveRows = await TryMapMovesFromClientAsync(id, ct);
-
-            // 4) Fallback: if still empty, fetch from PokéAPI directly
-            if (moveRows.Count == 0)
+            // If client already provided moves (with MoveType), DO NOT overwrite them.
+            // Only fall back to our local loaders if moves are missing entirely.
+            if (details.Moves == null || details.Moves.Count == 0)
             {
-                moveRows = await TryGetMovesViaFallbackAsync(id, ct);
+                var moveRows = await TryMapMovesFromClientAsync(id, ct);
+
+                if (moveRows.Count == 0)
+                {
+                    moveRows = await TryGetMovesViaFallbackAsync(id, ct);
+                }
+
+                // Assign only when we had nothing, so we don't lose MoveType.
+                details.Moves = moveRows;
             }
 
-            // 5) Sort and assign
-            details.Moves = moveRows
-                .OrderBy(x => x.Method == "level-up" ? 0 : 1)
-                .ThenBy(x => x.Level == 0 ? int.MaxValue : x.Level)
-                .ThenBy(x => x.MoveName)
-                .ToList();
+            // Sort for display (preserves MoveType on each row)
+            if (details.Moves != null && details.Moves.Count > 0)
+            {
+                details.Moves = details.Moves
+                    .OrderBy(x => string.Equals(x.Method, "level-up", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                    .ThenBy(x => x.Level == 0 ? int.MaxValue : x.Level)
+                    .ThenBy(x => x.MoveName)
+                    .ToList();
+            }
 
             return View(details);
         }
@@ -103,6 +109,8 @@ namespace Pokedex.Controllers
                             Level = v.LevelLearnedAt,                    // 0 for TM/tutor/egg
                             Method = v.MoveLearnMethod?.Name ?? "",
                             VersionGroup = v.VersionGroup?.Name ?? ""
+                            // NOTE: This fallback does NOT include MoveType.
+                            // We only use it when the client returned no moves at all.
                         });
                     }
                 }
@@ -178,6 +186,7 @@ namespace Pokedex.Controllers
                             Level = level,
                             Method = method,
                             VersionGroup = version
+                            // NOTE: This raw fallback does NOT include MoveType.
                         });
                     }
                 }

@@ -312,19 +312,38 @@
         </div>
     </section>
 
-    @* ===== MOVES & LEARN LEVELS — TABBED BY VERSION GROUP ===== *@
+    @* ===== MOVES & LEARN LEVELS — TABBED BY GAME, WITH TYPE CHIP ===== *@
     @{
         string Pretty(string s) => string.IsNullOrWhiteSpace(s) ? "—" : s.Replace("-", " ");
+
+        // Prefer true title-casing and fix common concatenated game names.
+        string PrettyGame(string g)
+        {
+            if (string.IsNullOrWhiteSpace(g)) return "—";
+            var x = g.Replace('-', ' ').Replace('_', ' ').Trim();
+
+            // Fix common concatenations (HGSS/FRLG).
+            x = x.Replace("heartgold", "Heart Gold", System.StringComparison.OrdinalIgnoreCase)
+            .Replace("soulsilver", "Soul Silver", System.StringComparison.OrdinalIgnoreCase)
+            .Replace("firered", "Fire Red", System.StringComparison.OrdinalIgnoreCase)
+            .Replace("leafgreen", "Leaf Green", System.StringComparison.OrdinalIgnoreCase);
+
+            // Title-case remaining tokens
+            var parts = x.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)
+            .Select(p => char.ToUpperInvariant(p[0]) + (p.Length > 1 ? p.Substring(1).ToLowerInvariant() : ""));
+            return string.Join(' ', parts);
+        }
+
         var hasMoves = (Model.Moves?.Count ?? 0) > 0;
         var groups = hasMoves
         ? Model.Moves
         .Select(m => m.VersionGroup ?? "")
         .Where(v => !string.IsNullOrWhiteSpace(v))
         .Distinct(StringComparer.OrdinalIgnoreCase)
-        .OrderBy(v => v) // alphabetical; change if you prefer a custom order
+        .OrderBy(v => v) // alphabetical; adjust if you want a custom chronology
         .ToList()
         : new List<string>();
-        // Create safe IDs for tabs/panels
+
         Func<string, string> GroupId = g => "vg-" + (g ?? "").ToLowerInvariant().Replace(' ', '-');
     }
 
@@ -337,7 +356,7 @@
         }
         else
         {
-            <div role="tablist" aria-label="Version Groups" class="vg-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px 0;">
+            <div role="tablist" aria-label="Game" class="vg-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px 0;">
                 @for (int i = 0; i < groups.Count; i++)
                 {
                     var g = groups[i];
@@ -350,8 +369,8 @@
                             id="@($"{id}-tab")"
                             class="vg-tab @activeClass"
                             data-target="#@id"
-                            style="border:1px solid #d1d5db;padding:6px 10px;border-radius:999px;background:#f8fafc;cursor:pointer;">
-                        @Pretty(g)
+                            style="border:1px solid #d1d5db;padding:6px 10px;border-radius:999px;background:#f8fafc;cursor:pointer;text-transform:capitalize;">
+                        @PrettyGame(g)
                     </button>
                 }
             </div>
@@ -368,13 +387,14 @@
                      @hidden
                      style="margin-top:6px;">
                     <div style="overflow:auto;border:1px solid #e5e7eb;border-radius:10px;">
-                        <table style="width:100%;border-collapse:collapse;font-size:0.95rem;min-width:720px;">
+                        <table style="width:100%;border-collapse:collapse;font-size:0.95rem;min-width:780px;">
                             <thead style="background:#f8fafc;">
                                 <tr>
                                     <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Move</th>
+                                    <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Type</th>
                                     <th style="text-align:right;padding:10px;border-bottom:1px solid #e5e7eb;">Level</th>
                                     <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Method</th>
-                                    <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Version Group</th>
+                                    <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Game</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -388,6 +408,27 @@
                                         <td style="padding:10px;border-bottom:1px solid #f0f2f5;text-transform:capitalize;">
                                             @row.MoveName
                                         </td>
+
+                                        @* === REPLACED TYPE CELL WITH REQUESTED SNIPPET (includes graceful fallback chip) === *@
+                                        @{
+                                            var moveType = row?.MoveType;
+                                            var typeLower = (moveType ?? "").ToLowerInvariant();
+                                        }
+                                        <td style="padding:10px;border-bottom:1px solid #f0f2f5;">
+                                            @if (!string.IsNullOrWhiteSpace(moveType))
+                                            {
+                                                <span class="pokemon-type type-@typeLower" style="display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;text-transform:capitalize;">
+                                                    @moveType
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="pokemon-type" style="display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;background:#e5e7eb;color:#374151;">
+                                                    —
+                                                </span>
+                                            }
+                                        </td>
+
                                         <td style="padding:10px;border-bottom:1px solid #f0f2f5;text-align:right;">
                                             @levelDisplay
                                         </td>
@@ -397,7 +438,7 @@
                                             </span>
                                         </td>
                                         <td style="padding:10px;border-bottom:1px solid #f0f2f5;text-transform:capitalize;">
-                                            @Pretty(row.VersionGroup)
+                                            @PrettyGame(row.VersionGroup)
                                         </td>
                                     </tr>
                                 }
