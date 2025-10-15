@@ -417,13 +417,19 @@
                                         <td style="padding:10px;border-bottom:1px solid #f0f2f5;">
                                             @if (!string.IsNullOrWhiteSpace(moveType))
                                             {
-                                                <span class="pokemon-type type-@typeLower" style="display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;text-transform:capitalize;">
+                                                var href = Url.Action("Details", "Types", new { name = moveType, returnUrl = Url.Action("Details", "Pokedex", new { id = Model.Id }) });
+
+                                                <a href="@href"
+                                                   class="pokemon-type type-@typeLower type-chip"
+                                                   style="display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;text-transform:capitalize;text-decoration:none;"
+                                                   title="View @moveType type details">
                                                     @moveType
-                                                </span>
+                                                </a>
                                             }
                                             else
                                             {
-                                                <span class="pokemon-type" style="display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;background:#e5e7eb;color:#374151;">
+                                                <span class="pokemon-type"
+                                                      style="display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;background:#e5e7eb;color:#374151;">
                                                     —
                                                 </span>
                                             }
