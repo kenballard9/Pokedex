@@ -30,7 +30,8 @@
 
                         <!-- Types -->
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Types" asp-action="Details" asp-route-name="fire">Types</a>
+                            <!-- Use Url.Action so we can pass an empty name as a query value -->
+                            <a class="nav-link" href='@Url.Action("Details", "Types", new { name = "" })'>Types</a>
                         </li>
                     </ul>
                 </div>

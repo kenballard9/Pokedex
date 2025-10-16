@@ -2,7 +2,12 @@
 @using System.Linq
 
 @{
-    ViewData["Title"] = $"{Model.TypeName} Type Details";
+    // Whether a type is currently selected
+    var hasSelection = !string.IsNullOrWhiteSpace(Model?.TypeName);
+
+    ViewData["Title"] = hasSelection
+        ? $"{Model.TypeName} Type Details"
+        : "Type Details";
 
     // Helpers
     string Cap(string s) => string.IsNullOrWhiteSpace(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
@@ -29,7 +34,7 @@
         back = Url.Action("Index", "Home");
     }
 
-    var selfLower = Lower(Model.TypeName);
+    var selfLower = hasSelection ? Lower(Model.TypeName) : "";
 }
 
 <div class="type-detail-page">
@@ -38,112 +43,125 @@
     </div>
 
     <header class="type-header">
-        <h1 class="type-title">
-            @Cap(Model.TypeName)
-        </h1>
-
-        <span class="pokemon-type type-@selfLower type-chip type-chip-lg">
-            @Cap(Model.TypeName)
-        </span>
+        @if (hasSelection)
+        {
+            <h1 class="type-title">@Cap(Model.TypeName)</h1>
+            <span class="pokemon-type type-@selfLower type-chip type-chip-lg">
+                @Cap(Model.TypeName)
+            </span>
+        }
+        else
+        {
+            <h1 class="type-title">Please select a type</h1>
+        }
     </header>
 
-    <section class="type-sections">
-        <!-- Strengths -->
-        <div class="type-card">
-            <h2 class="type-card-title">Strengths <span class="muted">(Deals 2× To)</span></h2>
-            <div class="type-badges">
-                @if (Model.Strengths?.Any() == true)
-                {
-                    foreach (var s in Model.Strengths)
+    @if (hasSelection)
+    {
+        <section class="type-sections">
+            <!-- Strengths -->
+            <div class="type-card">
+                <h2 class="type-card-title">Strengths <span class="muted">(Deals 2× To)</span></h2>
+                <div class="type-badges">
+                    @if (Model.Strengths?.Any() == true)
                     {
-                        var lower = Lower(s);
-                        <a class="pokemon-type type-@lower type-chip"
-                           href="@Url.Action("Details", "Types", new { name = s, returnUrl = back })"
-                           role="button"
-                           title="Go to @Cap(s) type">
-                            @Cap(s)
-                        </a>
+                        foreach (var s in Model.Strengths)
+                        {
+                            var lower = Lower(s);
+                            <a class="pokemon-type type-@lower type-chip"
+                               href="@Url.Action("Details", "Types", new { name = s, returnUrl = back })"
+                               role="button"
+                               title="Go to @Cap(s) type">
+                                @Cap(s)
+                            </a>
+                        }
                     }
-                }
-                else
-                {
-                    <span class="muted">None</span>
-                }
+                    else
+                    {
+                        <span class="muted">None</span>
+                    }
+                </div>
             </div>
-        </div>
 
-        <!-- Weak to -->
-        <div class="type-card">
-            <h2 class="type-card-title">Weak to <span class="muted">(Takes 2× From)</span></h2>
-            <div class="type-badges">
-                @if (Model.Weaknesses?.Any() == true)
-                {
-                    foreach (var w in Model.Weaknesses)
+            <!-- Weak to -->
+            <div class="type-card">
+                <h2 class="type-card-title">Weak to <span class="muted">(Takes 2× From)</span></h2>
+                <div class="type-badges">
+                    @if (Model.Weaknesses?.Any() == true)
                     {
-                        var lower = Lower(w);
-                        <a class="pokemon-type type-@lower type-chip"
-                           href="@Url.Action("Details", "Types", new { name = w, returnUrl = back })"
-                           role="button"
-                           title="Go to @Cap(w) type">
-                            @Cap(w)
-                        </a>
+                        foreach (var w in Model.Weaknesses)
+                        {
+                            var lower = Lower(w);
+                            <a class="pokemon-type type-@lower type-chip"
+                               href="@Url.Action("Details", "Types", new { name = w, returnUrl = back })"
+                               role="button"
+                               title="Go to @Cap(w) type">
+                                @Cap(w)
+                            </a>
+                        }
                     }
-                }
-                else
-                {
-                    <span class="muted">None</span>
-                }
+                    else
+                    {
+                        <span class="muted">None</span>
+                    }
+                </div>
             </div>
-        </div>
 
-        <!-- Resistant to -->
-        <div class="type-card">
-            <h2 class="type-card-title">Resistant to <span class="muted">(Takes ½× From)</span></h2>
-            <div class="type-badges">
-                @if (Model.Resistances?.Any() == true)
-                {
-                    foreach (var r in Model.Resistances)
+            <!-- Resistant to -->
+            <div class="type-card">
+                <h2 class="type-card-title">Resistant to <span class="muted">(Takes ½× From)</span></h2>
+                <div class="type-badges">
+                    @if (Model.Resistances?.Any() == true)
                     {
-                        var lower = Lower(r);
-                        <a class="pokemon-type type-@lower type-chip"
-                           href="@Url.Action("Details", "Types", new { name = r, returnUrl = back })"
-                           role="button"
-                           title="Go to @Cap(r) type">
-                            @Cap(r)
-                        </a>
+                        foreach (var r in Model.Resistances)
+                        {
+                            var lower = Lower(r);
+                            <a class="pokemon-type type-@lower type-chip"
+                               href="@Url.Action("Details", "Types", new { name = r, returnUrl = back })"
+                               role="button"
+                               title="Go to @Cap(r) type">
+                                @Cap(r)
+                            </a>
+                        }
                     }
-                }
-                else
-                {
-                    <span class="muted">None</span>
-                }
+                    else
+                    {
+                        <span class="muted">None</span>
+                    }
+                </div>
             </div>
-        </div>
 
-        <!-- Immune to -->
-        <div class="type-card">
-            <h2 class="type-card-title">Immune to <span class="muted">(Takes 0× From)</span></h2>
-            <div class="type-badges">
-                @if (Model.Immunities?.Any() == true)
-                {
-                    foreach (var i in Model.Immunities)
+            <!-- Immune to -->
+            <div class="type-card">
+                <h2 class="type-card-title">Immune to <span class="muted">(Takes 0× From)</span></h2>
+                <div class="type-badges">
+                    @if (Model.Immunities?.Any() == true)
                     {
-                        var lower = Lower(i);
-                        <a class="pokemon-type type-@lower type-chip"
-                           href="@Url.Action("Details", "Types", new { name = i, returnUrl = back })"
-                           role="button"
-                           title="Go to @Cap(i) type">
-                            @Cap(i)
-                        </a>
+                        foreach (var i in Model.Immunities)
+                        {
+                            var lower = Lower(i);
+                            <a class="pokemon-type type-@lower type-chip"
+                               href="@Url.Action("Details", "Types", new { name = i, returnUrl = back })"
+                               role="button"
+                               title="Go to @Cap(i) type">
+                                @Cap(i)
+                            </a>
+                        }
                     }
-                }
-                else
-                {
-                    <span class="muted">None</span>
-                }
+                    else
+                    {
+                        <span class="muted">None</span>
+                    }
+                </div>
             </div>
+        </section>
+    }
+    else
+    {
+        <div class="empty-state">
+            <p>No type is currently selected. Choose one below to view strengths, weaknesses, resistances, and immunities.</p>
         </div>
-    </section>
+    }
 
     @if (Model.AllTypes?.Any() == true)
     {
@@ -273,6 +291,22 @@
         }
     }
 
+    /* Empty state (no selection) */
+    .empty-state {
+        background: white;
+        border: 2px dashed var(--dex-blue);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 8px 16px rgba(0,0,0,.1);
+        color: #333;
+        margin-bottom: 16px;
+    }
+
+        .empty-state p {
+            margin: 0;
+            font-weight: 600;
+        }
+
     /* Cards */
     .type-card {
         background: white;
@@ -310,6 +344,8 @@
         text-transform: capitalize;
         border: 1px solid rgba(0,0,0,.08);
         transition: transform .1s ease, box-shadow .1s ease;
+        text-decoration: none;
+        cursor: pointer;
     }
 
         .pokemon-type:hover {

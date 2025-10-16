@@ -8,25 +8,20 @@ namespace Pokedex.Controllers
 {
     public class TypesController : Controller
     {
-        // GET /Types/Details?name=fire&returnUrl=/Pokedex/Details/6
+        // Handle both:
+        //   /Types/Details              --> empty state (no selection)
+        //   /Types/Details?name=fire    --> Fire selected
+        //   /Types/Details/{name?}      --> also supports path segment (e.g., /Types/Details/fire)
         [HttpGet("/Types/Details")]
-        public IActionResult Details(string name, string? returnUrl)
+        [HttpGet("/Types/Details/{name?}")]
+        public IActionResult Details(string? name, string? returnUrl)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                return NotFound();
-
-            // Normalize
-            var type = name.Trim().ToLowerInvariant();
-
             // All types (Gen 1–9; remove any you don’t support)
             var allTypes = new[]
             {
                 "normal","fire","water","electric","grass","ice","fighting","poison","ground",
                 "flying","psychic","bug","rock","ghost","dragon","dark","steel","fairy"
             };
-
-            if (!allTypes.Contains(type))
-                return NotFound($"Unknown type: {name}");
 
             // Offensive chart: attacker -> (defender -> multiplier)
             var eff = new Dictionary<string, Dictionary<string, double>>
@@ -51,6 +46,32 @@ namespace Pokedex.Controllers
                 { "fairy",   new() { { "fighting",2 }, { "dragon",2 }, { "dark",2 }, { "fire",0.5 }, { "poison",0.5 }, { "steel",0.5 } } }
             };
 
+            // Helper to pretty-case a list
+            static List<string> CapList(IEnumerable<string> src) =>
+                src.Select(s => string.IsNullOrWhiteSpace(s) ? s : char.ToUpperInvariant(s[0]) + s[1..]).ToList();
+
+            // Empty state: if no name provided, DO NOT 404. Show "Please select a type."
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                var vmEmpty = new TypeDetailsViewModel
+                {
+                    TypeName = null,              // triggers empty-state in the view
+                    Strengths = new List<string>(),
+                    Weaknesses = new List<string>(),
+                    Resistances = new List<string>(),
+                    Immunities = new List<string>(),
+                    AllTypes = CapList(allTypes), // still show "Jump to Type"
+                    ReturnUrl = returnUrl
+                };
+                return View("Details", vmEmpty);   // Views/Types/Details.cshtml
+            }
+
+            // Normalize
+            var type = name.Trim().ToLowerInvariant();
+
+            if (!allTypes.Contains(type))
+                return NotFound($"Unknown type: {name}");
+
             // Offensive strengths: what THIS type hits for >1×
             var strengths = eff.ContainsKey(type)
                 ? eff[type].Where(kv => kv.Value > 1.0).Select(kv => kv.Key).OrderBy(x => x).ToList()
@@ -70,10 +91,6 @@ namespace Pokedex.Controllers
             var resistances = defensive.Where(kv => kv.Value > 0 && kv.Value < 1.0).Select(kv => kv.Key).OrderBy(x => x).ToList();
             var immunities = defensive.Where(kv => kv.Value == 0).Select(kv => kv.Key).OrderBy(x => x).ToList();
 
-            // Pretty-case a list
-            static List<string> CapList(IEnumerable<string> src) =>
-                src.Select(s => string.IsNullOrWhiteSpace(s) ? s : char.ToUpperInvariant(s[0]) + s[1..]).ToList();
-
             var vm = new TypeDetailsViewModel
             {
                 TypeName = char.ToUpperInvariant(type[0]) + type[1..],
@@ -85,7 +102,7 @@ namespace Pokedex.Controllers
                 ReturnUrl = returnUrl
             };
 
-            return View(vm); // Views/Types/Details.cshtml
+            return View("Details", vm); // Views/Types/Details.cshtml
         }
     }
 }
