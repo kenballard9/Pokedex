@@ -24,10 +24,23 @@
             <div style="opacity:.7;">#@Model.Id</div>
             <h1 style="margin:.25rem 0;">@Model.Name</h1>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                @* TURN TYPE CHIPS INTO LINKS TO Types/Details *@
+                @{
+                    // Use the current page (including query) as the returnUrl for the Types page
+                    var currentDetailsUrl = (Context?.Request?.Path + Context?.Request?.QueryString).ToString();
+                }
                 @foreach (var type in Model.Types ?? System.Linq.Enumerable.Empty<string>())
                 {
-                    var lower = (type ?? "").ToLowerInvariant();
-                    <span class="pokemon-type type-@lower" style="padding:6px 10px;border-radius:999px;font-weight:700;">@type</span>
+                    var t = (type ?? "").Trim();
+                    var lower = t.ToLowerInvariant();
+                    var href = Url.Action("Details", "Types", new { name = t, returnUrl = currentDetailsUrl });
+
+                    <a href="@href"
+                       class="pokemon-type type-@lower type-chip"
+                       style="padding:6px 10px;border-radius:999px;font-weight:700;text-transform:capitalize;text-decoration:none;"
+                       title="View @t type details">
+                        @t
+                    </a>
                 }
             </div>
             <div style="margin-top:.5rem;opacity:.8;">
