@@ -53,4 +53,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Pokedex}/{action=Index}/{id?}"); // <-- Pokedex is default
 
+builder.Services.AddMemoryCache();
+
 app.Run();

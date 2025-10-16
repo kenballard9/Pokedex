@@ -12,7 +12,38 @@
     // Helpers
     string Cap(string s) => string.IsNullOrWhiteSpace(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
     string Lower(string s) => (s ?? "").ToLowerInvariant();
-    string SafeLocal(string url) => (!string.IsNullOrWhiteSpace(url) && Url.IsLocalUrl(url)) ? url : null;
+
+    // Accept relative local URLs AND absolute same-origin URLs (convert to relative)
+    string SafeLocal(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+
+        if (Url.IsLocalUrl(url)) return url; // already relative & local
+
+        try
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                var req = Context?.Request;
+                if (req != null)
+                {
+                    // Build "origin" for current app and for the incoming URI
+                    var thisOrigin = $"{req.Scheme}://{req.Host}";
+                    var otherOrigin = $"{uri.Scheme}://{uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}";
+
+                    if (string.Equals(thisOrigin, otherOrigin, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Convert absolute same-origin to relative path+query (safe)
+                        var rel = uri.PathAndQuery;
+                        return Url.IsLocalUrl(rel) ? rel : null;
+                    }
+                }
+            }
+        }
+        catch { /* ignore */ }
+
+        return null;
+    }
 
     // Gather possible "back" sources
     var fromVmReturn = SafeLocal(Model?.ReturnUrl);
@@ -39,7 +70,8 @@
 
 <div class="type-detail-page">
     <div class="top-bar">
-        <a class="nav-arrow back-link" href="@back">&larr; Back</a>
+        <!-- Fallback href is the computed safe local URL; JS will try history.back() first -->
+        <a id="backLink" class="nav-arrow back-link" href="@back" data-fallback="@back">&larr; Back</a>
     </div>
 
     <header class="type-header">
@@ -473,3 +505,28 @@
         margin: 0 0 24px 0;
     }
 </style>
+
+<script>
+    (function () {
+      // Prefer client-side history when available to return to the exact previous page/position.
+      const link = document.getElementById('backLink');
+      if (!link) return;
+
+      link.addEventListener('click', function (e) {
+        // Only intercept if there *is* a referrer on the same origin
+        const ref = document.referrer;
+        if (ref) {
+          try {
+            const refUrl = new URL(ref, window.location.origin);
+            if (refUrl.origin === window.location.origin) {
+              e.preventDefault();
+              // history.back keeps scroll & state when possible
+              window.history.back();
+              return;
+            }
+          } catch (_) { /* ignore parse issues */ }
+        }
+        // Otherwise, let the anchor's href (safe server-computed fallback) handle navigation.
+      });
+    })();
+</script>
