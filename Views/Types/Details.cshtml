@@ -4,15 +4,31 @@
 @{
     ViewData["Title"] = $"{Model.TypeName} Type Details";
 
-    // Prefer VM.ReturnUrl, then ?returnUrl, then Home/Index
-    var routeReturnUrl = (ViewBag.ReturnUrl as string);
-    var fromVmReturn = Model.ReturnUrl;
-    var back = !string.IsNullOrWhiteSpace(fromVmReturn) ? fromVmReturn
-             : !string.IsNullOrWhiteSpace(routeReturnUrl) ? routeReturnUrl
-             : Url.Action("Index", "Home");
-
+    // Helpers
     string Cap(string s) => string.IsNullOrWhiteSpace(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
     string Lower(string s) => (s ?? "").ToLowerInvariant();
+    string SafeLocal(string url) => (!string.IsNullOrWhiteSpace(url) && Url.IsLocalUrl(url)) ? url : null;
+
+    // Gather possible "back" sources
+    var fromVmReturn = SafeLocal(Model?.ReturnUrl);
+    var fromViewBagReturn = SafeLocal(ViewBag.ReturnUrl as string);
+    var fromQueryReturn = SafeLocal(Context?.Request?.Query["returnUrl"].ToString());
+    var fromReferer = SafeLocal(Context?.Request?.Headers["Referer"].ToString());
+
+    // Choose best available (in priority order)
+    var back = fromVmReturn
+               ?? fromViewBagReturn
+               ?? fromQueryReturn
+               ?? fromReferer
+               ?? Url.Action("Index", "Home");
+
+    // Prevent loops: if "back" is the current URL, fall back to Home.
+    var currentUrl = (Context?.Request?.Path + Context?.Request?.QueryString).ToString();
+    if (!string.IsNullOrWhiteSpace(currentUrl) && string.Equals(back, currentUrl, System.StringComparison.OrdinalIgnoreCase))
+    {
+        back = Url.Action("Index", "Home");
+    }
+
     var selfLower = Lower(Model.TypeName);
 }
 
@@ -25,7 +41,6 @@
         <h1 class="type-title">
             @Cap(Model.TypeName)
         </h1>
-
 
         <span class="pokemon-type type-@selfLower type-chip type-chip-lg">
             @Cap(Model.TypeName)
